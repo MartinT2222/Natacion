@@ -1,0 +1,59 @@
+
+
+
+
+
+.btn-ver-mas{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: #D97925; /* Color de fondo */
+    color: #FFFFFF; /* Color del texto */
+    padding: 5px 10px; /* Espaciado interior */
+}
+
+
+
+.btn-cart{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: #3B873B; /* Color de fondo */
+    color: #FFFFFF; /* Color del texto */
+    padding: 5px 10px; /* Espaciado interior */
+}
+
+.carta-producto, .carta-categoria {
+    width: 100%;
+    height: 100%;
+    margin: 10px; /* Agrega un margen alrededor de la tarjeta */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Agrega un sombreado sutil */
+}
+
+
+
+.d-item{
+    height: 500px;
+}
+.d-img{
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.6);
+}
+
+/* Estilos para la letra */
+.custom-text {
+    font-family: Arial, sans-serif; /* Cambia la fuente según lo que necesites */
+    font-size: 16px; /* Tamaño de la fuente en píxeles */
+    color: #FFE6C5; /* Color de la fuente en hexadecimal o nombre de color */
+}
+.ultimos-text {
+    font-size: 36px; /* Tamaño de la fuente en píxeles */
+    color: #FFE6C5; /* Color de la fuente en hexadecimal o nombre de color */
+    font-family: Arial, sans-serif; /* Cambia la fuente según lo que necesites */
+    margin: 35px; /* Agrega un margen alrededor de la tarjeta */
+}
+
+.fondo-formulario-color{
+    background-color: #D5A877;
+}

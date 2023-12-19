@@ -1,0 +1,126 @@
+
+{% extends 'tienda/layout.html' %}
+
+{% block body %}
+  <a href="{% url 'tienda:home' %}" class="btn btn-primary">Volver al inicio</a>
+  <h2>Agregar Alumno y Clase de Natación</h2>
+
+  <div class="row">
+    <div class="col-md-6">
+      <!-- Formulario para agregar un alumno -->
+      <form action="." method="POST" enctype="multipart/form-data" class="mt-4">
+        
+        {{ alumno_form.as_p }}
+
+        <button type="submit" name="alumno_form" class="btn btn-primary">Agregar Alumno</button>
+      </form>
+    </div>
+
+    <div class="col-md-6">
+      <!-- Formulario para agregar una clase de natación -->
+      <form action="." method="POST" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        {{ clase_natacion_form.as_p }}
+
+        <!-- Campo de selección para elegir el alumno -->
+        <div class="mb-3">
+          <label for="alumno" class="form-label">Seleccione un alumno:</label>
+          <select name="alumno" id="alumno" class="form-select">
+            {% for alumno in alumnos %}
+              <option value="{{ alumno.id }}">{{ alumno.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" name="clase_natacion_form" class="btn btn-primary">Agregar Clase de Natación</button>
+      </form>
+    </div>
+  </div>
+
+  <hr> <!-- Una línea divisoria entre los formularios -->
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Resultados de Alumnos</h3>
+      <table id="alumnos-table" class="display">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Teléfono</th>
+            <th>sexo</th>
+            <th>edad</th>
+            <th>email</th>
+            <th>fecha inscripcion</th>
+            <th>telefono emergencia</th>
+            <th>mensualidad</th>
+            <th>membresia vip</th>
+            <th>alergias</th>
+            <th>docente a cargo</th>
+            <th>clase natacion</th>
+            <!-- Agrega más encabezados según los datos que mostrarás -->
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Aquí se llenarán los datos de los alumnos -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr> <!-- Una línea divisoria entre los formularios -->
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Resultados de Clases de Natación</h3>
+      <table id="clases-natacion-table" class="display">
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Nombre del Docente</th>
+            <th>Precio</th>
+            <th>tipo pago</th>
+            <th>plan elegido</th>
+            <th>fecha clase</th>
+            <th>horas clase</th>
+            <!-- Agrega más encabezados según los datos que mostrarás -->
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Aquí se llenarán los datos de las clases de natación -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#alumnos-table').DataTable();
+      $('#clases-natacion-table').DataTable();
+    });
+  </script>
+{% endblock body %}
+
+
+<script>
+  $(document).ready(function() {
+    // Inicializa las tablas DataTable
+    var alumnosTable = $('#alumnos-table').DataTable();
+    var clasesNatacionTable = $('#clases-natacion-table').DataTable();
+
+    // Agrega un evento de cambio al select de docente
+    $('#docente-filter').on('change', function() {
+      var selectedDocente = $(this).val();
+
+      // Filtra la tabla de alumnos por docente
+      if (alumnosTable.column('12:name').search() !== selectedDocente) {
+        alumnosTable.column('12:name').search(selectedDocente).draw();
+      }
+
+      // Filtra la tabla de clases de natación por docente
+      if (clasesNatacionTable.column('1:name').search() !== selectedDocente) {
+        clasesNatacionTable.column('1:name').search(selectedDocente).draw();
+      }
+    });
+  });
+</script>

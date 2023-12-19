@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>SPARTA CLUB DE NATACION</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- Cargar jQuery desde la carpeta local -->
+    <script src="{% static 'node_modules/jquery/dist/jquery.min.js' %}"></script>
+
+    <!-- Cargar Bootstrap desde la carpeta local -->
+    <link rel="stylesheet" type="text/css" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'node_modules/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+
+    <!-- Cargar DataTables desde la carpeta local
+    <link rel="stylesheet" type="text/css" href="{% static 'node_modules/datatables.net-dt/css/jquery.dataTables.min.css' %}">
+    <script type="text/javascript" src="{% static 'node_modules/datatables.net/js/jquery.dataTables.min.js' %}"></script>--> 
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables/datatables.min.css' %}">
+    <script type="text/javascript" src="{% static 'DataTables/datatables.min.js' %}"></script>
+    
+    <script src="{% static 'js/script.js' %}"></script>
+
+
+
+    <!-- Incluir FullCalendar JS -->
+    <script src="{% static 'fullcalendar/core/index.js' %}"></script>
+    <script src="{% static 'fullcalendar/core/index.cjs' %}"></script>
+    <script src="{% static 'fullcalendar/core/index.js' %}"></script>
+    <script src="{% static 'fullcalendar/core/index.global.js' %}"></script>
+    <script src="{% static 'fullcalendar/core/index.global.min.js' %}"></script>
+
+
+    <script src="{% static 'fullcalendar/daygrid/index.cjs' %}"></script>
+    <script src="{% static 'fullcalendar/daygrid/index.js' %}"></script>
+    <script src="{% static 'fullcalendar/daygrid/index.global.js' %}"></script>
+    <script src="{% static 'fullcalendar/daygrid/index.global.min.js' %}"></script>
+    
+
+
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background-color: #97DCF3">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'tienda:home' %}" style=""><img src="{% static 'media/img/logonegro.png' %}" alt="Logo de la tienda" width="50" height="50">SPARTA CLUB DE NATACION</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"     
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" style="" aria-current="page" href="{% url 'tienda:home' %} ">Home</a>
+                    </li>
+                    <a href="" class="nav-link active" style=""> Acerca de</a>
+                    <a href="mailto: contacto@SPARTACLUBNATACION.com" class="nav-link active" style="">Contacto</a>
+                    {% if perms.TIENDA.agregar_alumno%}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tienda:agregar_alumno' %}"style="color: #ffffff;">Agregar Alumno</a>
+                    </li>
+                    {% endif %}
+                    {% if perms.TIENDA.lista_alumnos%}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tienda:lista_alumnos' %}"style="color: #ffffff;">lista alumnos</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tienda:ver_turnos' %}"style="color: #ffffff;">Ver Turnos</a>
+                      
+                    </li>
+                </ul>
+
+                <div class="dropdown">
+                    {% if user.is_authenticated %}
+                    Bienvenido!
+                    <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{user.username}}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item btn btn-warning" href="{% url 'logout' %} " style="color: #ffffff;">Salir </a></li>
+
+                    </ul>
+                    {% else %}
+                
+                    <div class="d-grid gap-2 d-md-block" style="padding: 10px;">
+                        <button class="btn btn-outline-success" type="button" style="background-color: #3B873B; color: white;"><a href="{% url 'login' %}" style="color: inherit; text-decoration: none;">Ingresar</a></button>
+                        <button class="btn btn-outline-info" type="button" style="background-color: #D97925; color: white;"><a href="{% url 'USUARIOS:registrarse' %}" style="color: inherit; text-decoration: none;">Registrarse</a></button>
+                    </div>
+                    
+
+                    {% endif%}
+                </div>
+
+                &NonBreakingSpace;
+                <form action="{% url 'tienda:buscar' %}" method="get">
+
+                    <input name="buscar" type="text" placeholder="buscar...">
+                    <button type="submit" class="btn btn-outline-info">Buscar</button>
+                </form>
+                &NonBreakingSpace;
+                
+                
+
+            </div>
+        </div>
+    </nav>
+
+
+
+
+
+    <div class="container">
+
+        {% block body %}
+
+        {% endblock body %}
+
+    </div>
+
+    <div class="container">
+
+        {% block content %}
+
+        {% endblock content %}
+    </div>
+
+
+
+    <footer class="footer mt-auto py-3" style="background-color: #8C2C08;">
+        <div class="container">
+            <div class="footer-copyright text-center py-2 "style="color: #DDA337;">
+                © 2023 SPARTA CLUB DE NATACION S.A
+                <a href="mailto: martinalejandrotorres77@gmail.com" style="color: #D5A877;">GRUPO: MateCoders.UTN</a>
+            </div>
+        </div>
+    </footer>
+    
+
+    
+    
+
+</body>
+
+</html>

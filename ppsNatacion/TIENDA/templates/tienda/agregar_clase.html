@@ -1,0 +1,44 @@
+
+<!-- Contenedor para mostrar la tabla de datos del alumno -->
+<div id="alumno-data" style="display: none;">
+    <div class="row">
+      <div class="col-md-12">
+        <h3>Datos del Alumno Registrado</h3>
+        <table id="alumno-table" class="display">
+          <thead>
+            <tr>
+              <!-- Encabezados de la tabla -->
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Teléfono</th>
+              <th>sexo</th>
+              <th>edad</th>
+              <th>email</th>
+              <th>fecha inscripcion</th>
+              <th>telefono emergencia</th>
+              <th>mensualidad</th>
+              <th>membresia vip</th>
+              <th>alergias</th>
+              <th>docente a cargo</th>
+              <th>clase natacion</th>
+              <!-- Agrega más encabezados según los datos que mostrarás -->
+            </tr>
+          </thead>
+          <tbody>
+            {% for alumno in alumnos %}
+            <tr>
+              <td>{{ alumno.alumno_id }}</td>
+              <td>{{ alumno.nombre }}</td>
+              <td>{{ alumno.direccion }}</td>
+              <td>{{ alumno.telefono }}</td>
+              <td>{{ alumno.get_sexo_display }}</td>
+              <td>{{ alumno.edad }}</td>
+              <!-- Agrega más columnas según los campos que desees mostrar -->
+            </tr>
+          {% endfor %}
+            <!-- Aquí se llenarán los datos del alumno -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

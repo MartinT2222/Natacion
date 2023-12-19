@@ -1,0 +1,55 @@
+{% extends 'tienda/layout.html' %}
+{% load static %}
+
+{% block body %}
+    <!--<h2>Turnos Disponibles</h2>
+    <ul>
+        {% for turno in turnos_disponibles %}
+            <li>{{ turno.fecha }} - {{ turno.hora }} {% if user.is_authenticated %}<a href="{% url 'agendar_turno' turno.id %}">Agendar con Alumno</a>{% endif %}</li>
+        {% endfor %}
+    </ul>
+
+     Mostrar turnos ocupados 
+    <h2>Turnos Ocupados</h2>
+    <ul>
+        {% for turno in turnos_ocupados %}
+            <li>{{ turno.fecha }} - {{ turno.hora }} {% if user.is_authenticated %}<a href="{% url 'cancelar_turno' turno.id %}">Cancelar Turno</a>{% endif %}</li>
+        {% endfor %}
+    </ul>
+-->
+    <!-- Elemento HTML donde se mostrará el calendario -->
+    <div id='calendar'></div>
+
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                // Configuración de FullCalendar
+                plugins: ['dayGrid'],
+                defaultView: 'dayGridMonth',
+                events: [
+                    // Aquí puedes generar los eventos para FullCalendar
+                    {% for turno in turnos_disponibles %}
+                    {
+                        title: 'Disponible',
+                        start: '{{ turno.fecha }}T{{ turno.hora }}',
+                        color: 'green'
+                    },
+                    {% endfor %}
+                    {% for turno in turnos_ocupados %}
+                    {
+                        title: 'Ocupado',
+                        start: '{{ turno.fecha }}T{{ turno.hora }}',
+                        color: 'red'
+                    },
+                    {% endfor %}
+                ]
+            });
+
+            calendar.render();
+        });
+    </script>
+{% endblock body %}
