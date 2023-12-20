@@ -1,0 +1,23 @@
+{% extends 'tienda/layout.html' %}
+{% load static %}
+
+{% block body %}
+<form method="post">
+  {% csrf_token %}
+  <select name="usuario_id">
+      {% for usuario in usuarios %}
+          <option value="{{ usuario.id }}">{{ usuario.username }}</option>
+      {% endfor %}
+  </select>
+
+  <select name="clases" multiple>
+      {% for clase in clases %}
+          <option value="{{ clase.id }}">{{ clase.nombre }}</option>
+      {% endfor %}
+  </select>
+
+  <button type="submit">Inscribir</button>
+</form>
+
+  
+{% endblock body %}

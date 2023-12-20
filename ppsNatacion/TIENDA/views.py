@@ -1,15 +1,19 @@
 
+import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import ClaseNatacion, Alumno , Turno
-from .forms import AlumnoForm, ClaseNatacionForm
+from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.query_utils import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
+from USUARIOS.models import CustomUser
+from USUARIOS.forms import RegistroForm
+from .forms import ClaseNatacionForm, HorarioClaseForm  # Importa el formulario de clase de natación
+from .models import ClaseNatacion, InscripcionClase, HorarioClase
+from datetime import datetime, timedelta
+from django.contrib import messages
 
 
 def home(request):
@@ -27,40 +31,124 @@ def home(request):
     # Renderiza la plantilla y envía el contexto
     return render(request, 'tienda/index.html', data)
 
-
+'''
 
 def buscar(request):
     buscar = request.GET['buscar']
-    alumno = Alumno.objects.filter(
+    usuario = User.objects.filter(
         Q(descripcion__icontains=buscar) | Q(titulo__icontains=buscar))
 
     return render(request, 'tienda/buscar.html', {
 
-        'alumno': alumno,
+        'usuario': usuario,
 
     })
 
 
 
-def lista_clases_natacion(request):
-    clases = ClaseNatacion.objects.all()
-    return render(request, 'lista_clases_natacion.html', {'clases': clases})
-
-def detalle_clase_natacion(request, clase_id):
-    clase = get_object_or_404(ClaseNatacion, pk=clase_id)
-    return render(request, 'detalle_clase_natacion.html', {'clase': clase})
-
+'''
 
 @permission_required('TIENDA.lista_alumnos')
 def lista_alumnos(request):
-    alumnos = Alumno.objects.all()
-    return render(request, 'tienda/lista_alumnos.html', {'alumnos': alumnos})
+    usuarios = CustomUser.objects.filter(is_superuser=False)
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if 'eliminar' in request.POST:
+            usuario_id = request.POST.get('alumno_id')  # Corregir obtención del ID del usuario a eliminar
+            usuario_eliminar = CustomUser.objects.get(pk=usuario_id)
+            usuario_eliminar.delete()
+            return redirect('tienda:lista_alumnos')
 
+    else:
+        form = RegistroForm()
+
+    return render(request, 'tienda/lista_alumnos.html', {'usuarios': usuarios, 'form': form})
+
+
+
+def generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin):
+    # Generar horarios recurrentes según los días seleccionados
+    horarios = []
+    dias = {'LUN': 0, 'MAR': 1, 'MIE': 2, 'JUE': 3, 'VIE': 4, 'SAB': 5, 'DOM': 6}
+    today = datetime.today()
+    for dia in dias_semana:
+        delta_days = (dias[dia] - today.weekday() + 7) % 7
+        fecha = today + timedelta(days=delta_days)
+        fecha = fecha.replace(hour=hora_inicio.hour, minute=hora_inicio.minute, second=0, microsecond=0)
+        while fecha <= today + timedelta(days=365):  # Limitar el rango a un año
+            horarios.append(fecha)
+            fecha += timedelta(days=7)
+    return horarios
+
+def agregar_clase_natacion(request):
+    if request.method == 'POST':
+        clase_form = ClaseNatacionForm(request.POST)
+        horario_form = HorarioClaseForm(request.POST)
+        if clase_form.is_valid() and horario_form.is_valid():
+            nueva_clase = clase_form.save()
+
+            hora_inicio = horario_form.cleaned_data['hora_inicio']
+            hora_fin = horario_form.cleaned_data['hora_fin']
+            dias_semana = horario_form.cleaned_data['dias_semana']
+
+            # Obtener horarios recurrentes para la nueva clase
+            horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
+
+            for fecha in horarios_recurrentes:
+                clases_superpuestas = HorarioClase.objects.filter(
+                    fecha=fecha,
+                    hora_inicio__lte=hora_fin,
+                    hora_fin__gte=hora_inicio
+                )
+
+                if clases_superpuestas.exists():
+                    messages.error(request, '¡La clase se superpone con otra existente!')
+                    return redirect('tienda:agregar_clase')
+
+            # Si no hay superposición, procedes a guardar la nueva clase
+            HorarioClase.objects.create(
+                clase_natacion=nueva_clase,
+                fecha=fecha,  # Aquí debes definir la fecha apropiada para guardar
+                hora_inicio=hora_inicio,
+                hora_fin=hora_fin,
+                cupos_disponibles=horario_form.cleaned_data['cupos_disponibles']
+            )
+            messages.success(request, 'La clase se ha guardado exitosamente!')
+            return redirect('tienda:agregar_clase')
+    else:
+        clase_form = ClaseNatacionForm()
+        horario_form = HorarioClaseForm()
+    return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form, 'horario_form': horario_form})
+
+
+
+
+
+
+
+
+def asociar_usuario_clases(request):
+    if request.method == 'POST':
+        usuario_id = request.POST.get('id')  # ID del usuario seleccionado
+        clases_seleccionadas = request.POST.getlist('clases')  # Lista de IDs de clases seleccionadas
+
+        usuario = CustomUser.objects.get(pk=usuario_id)
+        for clase_id in clases_seleccionadas:
+            clase = ClaseNatacion.objects.get(pk=clase_id)
+            InscripcionClase.objects.create(usuario=usuario, clase_natacion=clase)
+        # Lógica adicional como redirección o mensajes de éxito
+
+    usuarios = CustomUser.objects.all()
+    clases = ClaseNatacion.objects.all()
+    return render(request, 'tienda/asociar_usuario_clases.html', {'usuarios': usuarios, 'clases': clases})
+
+
+'''
 
 
 
 def detalle_alumno(request, alumno_id):
-    alumno = get_object_or_404(Alumno, pk=alumno_id)
+    alumno = get_object_or_404(User, pk=alumno_id)
     return render(request, 'detalle_alumno.html', {'alumno': alumno})
 
 
@@ -117,26 +205,22 @@ def agregar_clase(request):
 @permission_required('TIENDA.agregar_alumno')
 def agregar_alumno(request):
     if request.method == 'POST':
-        alumno_form = AlumnoForm(request.POST)
+        alumno_form = User(request.POST)
         if alumno_form.is_valid():
             # Guardar el alumno en la base de datos
-            alumno = alumno_form.save()
+            alumno = User.save()
             # Obtener los datos del alumno
             datos_alumno = {
-                'alumno_id': alumno.alumno_id,
+                'alumno_id': alumno.id,
                 'nombre': alumno.nombre,
                 'direccion': alumno.direccion,
                 'telefono': alumno.telefono,
                 'sexo': alumno.get_sexo_display(),
                 'edad': alumno.edad,
                 'email': alumno.email,
-                'fecha_inscripcion': alumno.fecha_inscripcion.strftime('%Y-%m-%d'),
                 'telefono_emergencia': alumno.telefono_emergencia,
-                'mensualidad': str(alumno.mensualidad),
-                'membresia_vip': 'Sí' if alumno.membresia_vip else 'No',
                 'alergias': alumno.alergias,
-                'docente_a_cargo': alumno.docente_a_cargo,
-                'clase_natacion': alumno.clase_natacion.especialidad if alumno.clase_natacion else ''
+                
                 # Agrega más datos según los que quieras mostrar
             }
             return render(request, 'tienda/agregar_alumno.html', {'alumno_form': alumno_form, 'datos_alumno': datos_alumno})
@@ -150,7 +234,7 @@ def crear_actualizar_alumno(request, alumno_id=None):
     # ... lógica para crear o actualizar un alumno ...
 
     # Obtener el alumno según el ID proporcionado
-    alumno = get_object_or_404(Alumno, id=alumno_id)
+    alumno = get_object_or_404(User, id=alumno_id)
 
     # Después de crear o actualizar el alumno, enviar el recordatorio de cuota
     alumno.enviar_recordatorio_cuota_whatsapp()
@@ -198,8 +282,8 @@ def editar_alumno(request, alumno_id):
             return JsonResponse({'success': False, 'error': 'Alumno no encontrado'})
     
     return JsonResponse({'success': False, 'error': 'Método no válido'})
-
-
+'''
+'''
 @csrf_exempt
 @permission_required('TIENDA.delete_alumno')
 def eliminar_alumno(request, alumno_id):
@@ -261,3 +345,4 @@ def ver_turnos(request):
         logger.info(evento)
     
     return render(request, 'tienda/ver_turnos.html', {'turnos_disponibles': turnos_disponibles, 'turnos_ocupados': turnos_ocupados})
+'''
