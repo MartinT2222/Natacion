@@ -1,19 +1,18 @@
 
-import datetime
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.http import HttpResponse
+
 from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.query_utils import Q
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
 from .forms import ClaseNatacionForm, HorarioClaseForm  # Importa el formulario de clase de natación
 from .models import ClaseNatacion, InscripcionClase, HorarioClase
 from datetime import datetime, timedelta
 from django.contrib import messages
+from django.utils import timezone
+from django.http import HttpResponseServerError
+
 
 
 def home(request):
@@ -31,11 +30,11 @@ def home(request):
     # Renderiza la plantilla y envía el contexto
     return render(request, 'tienda/index.html', data)
 
-'''
+
 
 def buscar(request):
     buscar = request.GET['buscar']
-    usuario = User.objects.filter(
+    usuario = CustomUser.objects.filter(
         Q(descripcion__icontains=buscar) | Q(titulo__icontains=buscar))
 
     return render(request, 'tienda/buscar.html', {
@@ -43,10 +42,6 @@ def buscar(request):
         'usuario': usuario,
 
     })
-
-
-
-'''
 
 @permission_required('TIENDA.lista_alumnos')
 def lista_alumnos(request):
@@ -122,25 +117,59 @@ def agregar_clase_natacion(request):
 
 
 
-
-
-
-
-
+@login_required
 def asociar_usuario_clases(request):
     if request.method == 'POST':
-        usuario_id = request.POST.get('id')  # ID del usuario seleccionado
-        clases_seleccionadas = request.POST.getlist('clases')  # Lista de IDs de clases seleccionadas
+        try:
+            usuario = request.user  # Acceder al usuario autenticado
+            clase_id = request.POST.get('clase_id')  # Obtener el ID de la clase seleccionada
 
-        usuario = CustomUser.objects.get(pk=usuario_id)
-        for clase_id in clases_seleccionadas:
-            clase = ClaseNatacion.objects.get(pk=clase_id)
-            InscripcionClase.objects.create(usuario=usuario, clase_natacion=clase)
-        # Lógica adicional como redirección o mensajes de éxito
+            # Obtener la clase usando el ID obtenido
+            clase = get_object_or_404(ClaseNatacion, pk=clase_id)
 
-    usuarios = CustomUser.objects.all()
+            # Verificar si se reciben los datos esperados
+            print(f"Usuario: {usuario}")
+            print(f"Clase ID: {clase_id}")
+
+            # Obtener el horario de la clase
+            horario_clase = clase.horarioclase_set.first()  # Ajusta esto según la lógica de tu aplicación
+
+            # Verificar si se están obteniendo las clases y los horarios correctamente
+            print(f"Clase: {clase}")
+            print(f"Horario Clase: {horario_clase}")
+
+            # Si ambas entidades existen, proceder con la inscripción
+            if usuario and clase and horario_clase:
+                InscripcionClase.objects.create(usuario=usuario, horario_clase=horario_clase, fecha_inscripcion=timezone.now())
+                # Lógica adicional como redirección o mensajes de éxito
+        except Exception as e:
+            # Captura cualquier excepción y muestra información útil para depuración
+            print(f"Error: {e}")
+            return HttpResponseServerError('Internal Server Error')
+
     clases = ClaseNatacion.objects.all()
-    return render(request, 'tienda/asociar_usuario_clases.html', {'usuarios': usuarios, 'clases': clases})
+    return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases})
+
+
+def get_horarios_clase(request):
+    # Obtener horarios de clases y convertirlos a formato de eventos
+    horarios = HorarioClase.objects.all()
+    eventos = []
+
+    for horario in horarios:
+        evento = {
+            'id': horario.id,  # Debes asegurarte de tener un identificador único para cada evento
+            'title': horario.clase_natacion.nombre,
+            'start': horario.fecha.strftime('%Y-%m-%d') + 'T' + horario.hora_inicio.strftime('%H:%M:%S'),
+            'end': horario.fecha.strftime('%Y-%m-%d') + 'T' + horario.hora_fin.strftime('%H:%M:%S'),
+            # Otros campos que puedas necesitar para el evento
+        }
+        eventos.append(evento)
+    return JsonResponse(eventos, safe=False)
+
+
+
+
 
 
 '''

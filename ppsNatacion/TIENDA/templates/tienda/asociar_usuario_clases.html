@@ -2,22 +2,24 @@
 {% load static %}
 
 {% block body %}
-<form method="post">
-  {% csrf_token %}
-  <select name="usuario_id">
-      {% for usuario in usuarios %}
-          <option value="{{ usuario.id }}">{{ usuario.username }}</option>
-      {% endfor %}
-  </select>
+<div style="display: flex;">
+    <div style="flex: 1;">
+        <h1>Formulario para asociar usuarios a clases</h1>
+        <label>Hola {{ request.user.username }}, puedes elegir las clases que quieres tomar</label><br>
+        <form method="post" id="claseForm" action="{% url 'tienda:asociar_usuario_clases' %}">
+            {% csrf_token %}
+            <input type="hidden" name="clase_id" value="{{ clase.id }}">
+            <input type="hidden" id="horariosSeleccionados" name="horariosSeleccionados" value="">
+            <button type="button" onclick="enviarHorariosSeleccionados()">Asociar a Clase</button>
+        </form>
+    </div>
 
-  <select name="clases" multiple>
-      {% for clase in clases %}
-          <option value="{{ clase.id }}">{{ clase.nombre }}</option>
-      {% endfor %}
-  </select>
+    <div id="calendario" style="flex: 1;"></div>
+</div>
+<script>
+    const getHorariosClaseURL = '{% url "tienda:get_horarios_clase" %}';
 
-  <button type="submit">Inscribir</button>
-</form>
-
-  
+</script>
+<script src="{% static 'js/calendario.js' %}">
+</script>
 {% endblock body %}

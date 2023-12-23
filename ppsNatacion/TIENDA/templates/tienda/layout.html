@@ -13,7 +13,7 @@
     <!-- Cargar Bootstrap desde la carpeta local -->
     <link rel="stylesheet" type="text/css" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}">
     <script type="text/javascript" src="{% static 'node_modules/bootstrap/dist/js/bootstrap.min.js' %}"></script>
-
+    <script type="text/javascript" src="{% static 'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <!-- Cargar DataTables desde la carpeta local
     <link rel="stylesheet" type="text/css" href="{% static 'node_modules/datatables.net-dt/css/jquery.dataTables.min.css' %}">
     <script type="text/javascript" src="{% static 'node_modules/datatables.net/js/jquery.dataTables.min.js' %}"></script>--> 
@@ -22,22 +22,17 @@
     <script type="text/javascript" src="{% static 'DataTables/datatables.min.js' %}"></script>
     
     <script src="{% static 'js/script.js' %}"></script>
-
+    <script src="{% static 'js/calendario.js' %}"></script>
 
 
     <!-- Incluir FullCalendar JS -->
-    <script src="{% static 'fullcalendar/core/index.js' %}"></script>
-    <script src="{% static 'fullcalendar/core/index.cjs' %}"></script>
-    <script src="{% static 'fullcalendar/core/index.js' %}"></script>
-    <script src="{% static 'fullcalendar/core/index.global.js' %}"></script>
-    <script src="{% static 'fullcalendar/core/index.global.min.js' %}"></script>
 
+        <!-- Incluir FullCalendar JS -->
 
-    <script src="{% static 'fullcalendar/daygrid/index.cjs' %}"></script>
-    <script src="{% static 'fullcalendar/daygrid/index.js' %}"></script>
-    <script src="{% static 'fullcalendar/daygrid/index.global.js' %}"></script>
-    <script src="{% static 'fullcalendar/daygrid/index.global.min.js' %}"></script>
     
+    <script src="{% static 'fullcalendar/core/index.global.js' %}"></script>
+    <script src="{% static 'fullcalendar/daygrid/index.global.min.js' %}"></script>
+<!-- Otros archivos necesarios de FullCalendar -->
 
 
 </head>
@@ -78,38 +73,34 @@
                     </li>
                 </ul>
 
-                <div class="dropdown">
+                <div class="d-grid gap-2 d-md-block">
                     {% if user.is_authenticated %}
-                    Bienvenido!
-                    <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        {{user.username}}
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item btn btn-warning" href="{% url 'logout' %} " style="color: #ffffff;">Salir </a></li>
+                        <div class="dropdown">
+                            <span class="navbar-text" style="color: #ffffff">
+                            Bienvenido!
+                            </span>
+                            <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                {{user.username}}
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Salir </a></li>
 
-                    </ul>
+                            </ul>
+                        </div>
                     {% else %}
-                
-                    <div class="d-grid gap-2 d-md-block" style="padding: 10px;">
-                        <button class="btn btn-outline-success" type="button" style="background-color: #3B873B; color: white;"><a href="{% url 'login' %}" style="color: inherit; text-decoration: none;">Ingresar</a></button>
-                        <button class="btn btn-outline-info" type="button" style="background-color: #D97925; color: white;"><a href="{% url 'USUARIOS:registrarse' %}" style="color: inherit; text-decoration: none;">Registrarse</a></button>
-                    </div>
-                    
-
+                    <button class="btn btn-outline-success" type="button" style="background-color: #3B873B; color: white;"><a href="{% url 'login' %}" style="color: inherit; text-decoration: none;">Ingresar</a></button>
+                    <button class="btn btn-outline-info" type="button" style="background-color: #D97925; color: white;"><a href="{% url 'USUARIOS:registrarse' %}" style="color: inherit; text-decoration: none;">Registrarse</a></button>
                     {% endif%}
                 </div>
 
                 &NonBreakingSpace;
 
-
+                <form action="{% url 'tienda:buscar' %} ">
                     <input name="buscar" type="text" placeholder="buscar...">
                     <button type="submit" class="btn btn-outline-info">Buscar</button>
                 </form>
                 
-                    <input name="buscar" type="text" placeholder="buscar...">
-                    <button type="submit" class="btn btn-outline-info">Buscar</button>
-                </form>
                 &NonBreakingSpace;
                 
                 

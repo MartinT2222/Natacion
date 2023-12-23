@@ -8,6 +8,7 @@ class ClaseNatacion(models.Model):
     # Otros campos relevantes para la clase de natación
 
 class HorarioClase(models.Model):
+    
     clase_natacion = models.ForeignKey(ClaseNatacion, on_delete=models.CASCADE)
     fecha = models.DateField()
     hora_inicio = models.TimeField()
