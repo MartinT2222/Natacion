@@ -10,16 +10,29 @@
             {% csrf_token %}
             <input type="hidden" name="clase_id" value="{{ clase.id }}">
             <input type="hidden" id="horariosSeleccionados" name="horariosSeleccionados" value="">
-            <button type="button" onclick="enviarHorariosSeleccionados()">Asociar a Clase</button>
+            <button type="button" id="enviarHorariosBtn">Asociar a Clase</button>
         </form>
     </div>
 
     <div id="calendario" style="flex: 1;"></div>
 </div>
-<script>
-    const getHorariosClaseURL = '{% url "tienda:get_horarios_clase" %}';
+    <script>
+        const getHorariosClaseURL = '{% url "tienda:get_horarios_clase" %}';
 
-</script>
-<script src="{% static 'js/calendario.js' %}">
-</script>
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    <script src="{% static 'js/calendario.js' %}"></script>
 {% endblock body %}

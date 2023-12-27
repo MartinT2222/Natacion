@@ -13,6 +13,7 @@ urlpatterns = [
     path('asociar_usuario_clases/', views.asociar_usuario_clases, name='asociar_usuario_clases'),
     path('clase/agregar/', views.agregar_clase_natacion, name='agregar_clase'),  # Ruta para agregar clase
     path('get_horarios_clase/', views.get_horarios_clase, name='get_horarios_clase'),
+    path('capturar_id/', views.capturar_id, name='capturar_id'),
 #    path('alumnos/editar/<int:alumno_id>/', views.editar_alumno, name='edit_alumno'),
 #    path('alumnos/eliminar/<int:alumno_id>/', views.eliminar_alumno, name='eliminar_alumno'),
 #    path('ver-turnos/', views.ver_turnos, name='ver_turnos'),

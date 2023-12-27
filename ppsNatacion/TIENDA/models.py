@@ -1,27 +1,36 @@
 from django.db import models
-
 from USUARIOS.models import CustomUser
-
 
 class ClaseNatacion(models.Model):
     nombre = models.CharField(max_length=100)
-    # Otros campos relevantes para la clase de natación
-
-class HorarioClase(models.Model):
-    
-    clase_natacion = models.ForeignKey(ClaseNatacion, on_delete=models.CASCADE)
     fecha = models.DateField()
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
     cupos_disponibles = models.PositiveIntegerField(default=0)
-    # Otros campos relevantes para el horario de la clase
+    # Otros campos relevantes para la clase de natación
 
 class InscripcionClase(models.Model):
-    usuario = models.ForeignKey('USUARIOS.CustomUser', on_delete=models.CASCADE)
-    horario_clase = models.ForeignKey(HorarioClase, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    clase_natacion = models.ForeignKey(ClaseNatacion, on_delete=models.CASCADE)
     fecha_inscripcion = models.DateTimeField(auto_now_add=True)
-    # Otros campos relevantes para la inscripción
 
+    def __str__(self):
+        return f'{self.usuario.username} - {self.clase_natacion.nombre}'
+
+    def obtener_nombre_clase(self):
+        return self.clase_natacion.nombre
+
+    def obtener_fecha(self):
+        return self.clase_natacion.fecha
+
+    def obtener_hora_inicio(self):
+        return self.clase_natacion.hora_inicio
+
+    def obtener_hora_fin(self):
+        return self.clase_natacion.hora_fin
+
+    def obtener_cupos_disponibles(self):
+        return self.clase_natacion.cupos_disponibles
 
 
 

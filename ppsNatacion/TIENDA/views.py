@@ -1,17 +1,18 @@
-
-
+import json
 from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.query_utils import Q
 from django.http import JsonResponse
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
-from .forms import ClaseNatacionForm, HorarioClaseForm  # Importa el formulario de clase de natación
-from .models import ClaseNatacion, InscripcionClase, HorarioClase
+from .forms import ClaseNatacionForm  # Importa el formulario de clase de natación
+from .models import ClaseNatacion, InscripcionClase
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseServerError
+from django.shortcuts import HttpResponse
+from django.views.decorators.http import require_POST
 
 
 
@@ -75,47 +76,34 @@ def generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin):
             fecha += timedelta(days=7)
     return horarios
 
+@login_required
 def agregar_clase_natacion(request):
     if request.method == 'POST':
         clase_form = ClaseNatacionForm(request.POST)
-        horario_form = HorarioClaseForm(request.POST)
-        if clase_form.is_valid() and horario_form.is_valid():
-            nueva_clase = clase_form.save()
+        if clase_form.is_valid():
+            nueva_clase = clase_form.save(commit=False)  # Evitar guardar la instancia por ahora
 
-            hora_inicio = horario_form.cleaned_data['hora_inicio']
-            hora_fin = horario_form.cleaned_data['hora_fin']
-            dias_semana = horario_form.cleaned_data['dias_semana']
+            hora_inicio = nueva_clase.hora_inicio
+            hora_fin = nueva_clase.hora_fin
+            dias_semana = request.POST.getlist('dias_semana')  # Obtener los días seleccionados desde el formulario
 
             # Obtener horarios recurrentes para la nueva clase
             horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
 
             for fecha in horarios_recurrentes:
-                clases_superpuestas = HorarioClase.objects.filter(
-                    fecha=fecha,
-                    hora_inicio__lte=hora_fin,
-                    hora_fin__gte=hora_inicio
-                )
+                # Crear una nueva instancia de ClaseNatacion para cada fecha
+                nueva_clase.pk = None  # Asignar None al ID para crear una nueva instancia
+                nueva_clase.fecha = fecha  # Asignar la fecha generada
+                nueva_clase.save()  # Guardar la instancia de ClaseNatacion
 
-                if clases_superpuestas.exists():
-                    messages.error(request, '¡La clase se superpone con otra existente!')
-                    return redirect('tienda:agregar_clase')
-
-            # Si no hay superposición, procedes a guardar la nueva clase
-            HorarioClase.objects.create(
-                clase_natacion=nueva_clase,
-                fecha=fecha,  # Aquí debes definir la fecha apropiada para guardar
-                hora_inicio=hora_inicio,
-                hora_fin=hora_fin,
-                cupos_disponibles=horario_form.cleaned_data['cupos_disponibles']
-            )
-            messages.success(request, 'La clase se ha guardado exitosamente!')
+            # Redireccionar o mostrar mensajes de éxito después de guardar todas las instancias
+            messages.success(request, 'Las clases se han guardado exitosamente!')
             return redirect('tienda:agregar_clase')
+
     else:
         clase_form = ClaseNatacionForm()
-        horario_form = HorarioClaseForm()
-    return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form, 'horario_form': horario_form})
 
-
+    return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form})
 
 @login_required
 def asociar_usuario_clases(request):
@@ -127,48 +115,73 @@ def asociar_usuario_clases(request):
             # Obtener la clase usando el ID obtenido
             clase = get_object_or_404(ClaseNatacion, pk=clase_id)
 
-            # Verificar si se reciben los datos esperados
-            print(f"Usuario: {usuario}")
-            print(f"Clase ID: {clase_id}")
+            # Crear la inscripción para el usuario y la clase seleccionada
+            InscripcionClase.objects.create(usuario=usuario, clase_natacion=clase, fecha_inscripcion=timezone.now())
 
-            # Obtener el horario de la clase
-            horario_clase = clase.horarioclase_set.first()  # Ajusta esto según la lógica de tu aplicación
+            # Lógica adicional como redirección o mensajes de éxito
+            # ...
 
-            # Verificar si se están obteniendo las clases y los horarios correctamente
-            print(f"Clase: {clase}")
-            print(f"Horario Clase: {horario_clase}")
-
-            # Si ambas entidades existen, proceder con la inscripción
-            if usuario and clase and horario_clase:
-                InscripcionClase.objects.create(usuario=usuario, horario_clase=horario_clase, fecha_inscripcion=timezone.now())
-                # Lógica adicional como redirección o mensajes de éxito
         except Exception as e:
             # Captura cualquier excepción y muestra información útil para depuración
             print(f"Error: {e}")
             return HttpResponseServerError('Internal Server Error')
 
     clases = ClaseNatacion.objects.all()
-    return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases})
+    #print(f"asociar_usuario_clases: {clases}")
+    #print(f"Me trae todos los ClaseNatacion object (1)> al entrar en la vista Asiciar usuarios a clases: ")
+    
+    return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases})  # Reemplaza 'ruta_de_tu_template.html' con el nombre correcto de tu template
 
-
+ 
 def get_horarios_clase(request):
     # Obtener horarios de clases y convertirlos a formato de eventos
-    horarios = HorarioClase.objects.all()
+    clases = ClaseNatacion.objects.all()
     eventos = []
 
-    for horario in horarios:
+    for clase in clases:
         evento = {
-            'id': horario.id,  # Debes asegurarte de tener un identificador único para cada evento
-            'title': horario.clase_natacion.nombre,
-            'start': horario.fecha.strftime('%Y-%m-%d') + 'T' + horario.hora_inicio.strftime('%H:%M:%S'),
-            'end': horario.fecha.strftime('%Y-%m-%d') + 'T' + horario.hora_fin.strftime('%H:%M:%S'),
+            'id': clase.id,  # Debes asegurarte de tener un identificador único para cada evento
+            'title': clase.nombre,
+            'start': clase.fecha.strftime('%Y-%m-%d') + 'T' + clase.hora_inicio.strftime('%H:%M:%S'),
+            'end': clase.fecha.strftime('%Y-%m-%d') + 'T' + clase.hora_fin.strftime('%H:%M:%S'),
             # Otros campos que puedas necesitar para el evento
         }
         eventos.append(evento)
+    #print(f"get_horarios_clase TODOS ARRAY CON ID, NOMBRE DE LA CLASE,FECHA HORA DE INICIO,FECHA HORA DE FIN DE LA CLASE: {eventos}")
+    #print(f"get_horarios_clase TODOS ARRAY CON ID, NOMBRE DE LA CLASE,FECHA HORA DE INICIO,FECHA HORA DE FIN DE LA CLASE: ")    
     return JsonResponse(eventos, safe=False)
 
 
 
+
+
+
+@require_POST
+@login_required
+def capturar_id(request):
+    try:
+        data = json.loads(request.body)
+        horarios_seleccionados = data.get('horariosSeleccionados', [])
+
+        # Procesamiento de los horarios seleccionados
+        for horario_id in horarios_seleccionados:
+            # Verifica si el ID es válido y está presente en la ClaseNatacion
+            try:
+                clase_natacion = ClaseNatacion.objects.get(pk=horario_id)
+            except ClaseNatacion.DoesNotExist:
+                return JsonResponse({'error': f'El horario con ID {horario_id} no existe'}, status=400)
+
+            # Crea una inscripción para el usuario actual en la clase de natación seleccionada
+            InscripcionClase.objects.create(usuario=request.user, clase_natacion=clase_natacion)
+
+        # Respuesta exitosa
+        return JsonResponse({'message': 'Proceso completado'})
+
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
 
 
 
