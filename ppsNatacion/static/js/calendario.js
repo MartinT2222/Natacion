@@ -5,25 +5,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        locale: 'es', // Configuración para el idioma español
+        
         selectable: false,
         events: {
             url: getHorariosClaseURL, // Variable definida en la plantilla Django
             method: 'GET'
         },
         eventClick: function(info) {
-            console.log('Evento select activado');
-            if (horariosSeleccionados.has(info.event.id)) {
-                console.log('Evento select activado');
-                horariosSeleccionados.delete(info.event.id);
-                info.jsEvent.target.style.backgroundColor = '';
+            var selectedEvent = info.event;
+            var eventId = selectedEvent.id;
+
+            if (horariosSeleccionados.has(eventId)) {
+                horariosSeleccionados.delete(eventId);
+                selectedEvent.setProp('backgroundColor', ''); // Remove color when deselected
             } else {
-                horariosSeleccionados.add(info.event.id);
-                info.jsEvent.target.style.backgroundColor = 'gray';
+                horariosSeleccionados.add(eventId);
+                selectedEvent.setProp('backgroundColor', 'red'); // Set color when selected
             }
-            //console.log('IDs de los eventos seleccionados:', Array.from(horariosSeleccionados));
+
+            // Show details of all selected events
+            var infoDiv = document.getElementById('informacionEvento');
+            infoDiv.innerHTML = '<h3>Detalles de Eventos Seleccionados:</h3>';
+            horariosSeleccionados.forEach(function(eventId) {
+                var event = calendar.getEventById(eventId);
+                var selectedDate = event.start;
+                var className = event.title;
+
+                var formattedDate = selectedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                var formattedTime = selectedDate.toLocaleTimeString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true });
+
+                infoDiv.innerHTML += '<p>Clase: ' + className + '</p>' +
+                                     '<p>Día: ' + formattedDate + '</p>' +
+                                     '<p>Hora: ' + formattedTime + '</p>' +
+                                     '<hr>';
+            });
         }
     });
-
+    
     calendar.render();
 
     function enviarHorariosSeleccionados() {

@@ -135,7 +135,8 @@ def asociar_usuario_clases(request):
  
 def get_horarios_clase(request):
     # Obtener horarios de clases y convertirlos a formato de eventos
-    clases = ClaseNatacion.objects.all()
+    fecha_actual = timezone.now()
+    clases = ClaseNatacion.objects.filter(fecha__gte=fecha_actual)
     eventos = []
 
     for clase in clases:

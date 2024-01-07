@@ -5,17 +5,21 @@
 <div style="display: flex;">
     <div style="flex: 1;">
         <h1>Formulario para asociar usuarios a clases</h1>
+        <div id="calendario" style="flex: 1;"></div>
         <label>Hola {{ request.user.username }}, puedes elegir las clases que quieres tomar</label><br>
         <form method="post" id="claseForm" action="{% url 'tienda:asociar_usuario_clases' %}">
             {% csrf_token %}
             <input type="hidden" name="clase_id" value="{{ clase.id }}">
             <input type="hidden" id="horariosSeleccionados" name="horariosSeleccionados" value="">
+            <div id="informacionEvento"></div>
             <button type="button" id="enviarHorariosBtn">Asociar a Clase</button>
+            
         </form>
     </div>
-
-    <div id="calendario" style="flex: 1;"></div>
+    
+    
 </div>
+
     <script>
         const getHorariosClaseURL = '{% url "tienda:get_horarios_clase" %}';
 
