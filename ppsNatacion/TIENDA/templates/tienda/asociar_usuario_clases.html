@@ -5,7 +5,6 @@
 <div style="display: flex;">
     <div style="flex: 1;">
         <h1>Formulario para asociar usuarios a clases</h1>
-        <div id="calendario" style="flex: 1;"></div>
         <label>Hola {{ request.user.username }}, puedes elegir las clases que quieres tomar</label><br>
         <form method="post" id="claseForm" action="{% url 'tienda:asociar_usuario_clases' %}">
             {% csrf_token %}
@@ -17,7 +16,7 @@
         </form>
     </div>
     
-    
+    <div id="calendario" style="flex: 1;"></div>
 </div>
 
     <script>

@@ -4,11 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var horariosSeleccionados = new Set();
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
+        
         initialView: 'dayGridMonth',
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev,next',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            right: 'today'
         },
         locale: 'es', // Configuración para el idioma español
         
@@ -65,25 +66,40 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({
                 horariosSeleccionados: Array.from(horariosSeleccionados)
-                
             }),
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Respuesta desde Django:', data);
+            if (data.success) {
+                // Si todos los turnos se agendaron correctamente
+                data.messages.forEach(message => {
+                    // Mostrar mensaje de éxito con estilo de Bootstrap
+                    document.getElementById('informacionEvento').innerHTML += `
+                        <div class="alert alert-success" role="alert">
+                            ${message}
+                        </div>
+                    `;
+                });
+            } else {
+                // Si hubo problemas al agendar los turnos
+                data.messages.forEach(message => {
+                    // Mostrar mensaje de error con estilo de Bootstrap
+                    document.getElementById('informacionEvento').innerHTML += `
+                        <div class="alert alert-danger" role="alert">
+                            ${message}
+                        </div>
+                    `;
+                });
+            }
         })
         .catch(error => {
             console.error('Error en la solicitud:', error);
         });
+        
         
 
 

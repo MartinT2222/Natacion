@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.http import HttpResponseServerError
 from django.shortcuts import HttpResponse
 from django.views.decorators.http import require_POST
-
+from calendar import monthrange
 
 
 def home(request):
@@ -133,27 +133,38 @@ def asociar_usuario_clases(request):
     return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases})  # Reemplaza 'ruta_de_tu_template.html' con el nombre correcto de tu template
 
  
+
+
+
 def get_horarios_clase(request):
-    # Obtener horarios de clases y convertirlos a formato de eventos
-    fecha_actual = timezone.now()
-    clases = ClaseNatacion.objects.filter(fecha__gte=fecha_actual)
-    eventos = []
+    fecha_actual = datetime.now()
+    primer_dia_mes_actual = fecha_actual
+    ultimo_dia_mes_actual = fecha_actual.replace(day=monthrange(fecha_actual.year, fecha_actual.month)[1])
+    
+    # Si estamos en la última semana del mes actual o la fecha actual es el día 25
+    if fecha_actual.day == 25 or fecha_actual + timedelta(7) > ultimo_dia_mes_actual:
+        # Obtenemos los eventos del mes siguiente hasta completar 35 días
+        primer_dia_mes_siguiente = ultimo_dia_mes_actual + timedelta(days=1)
+        ultimo_dia_mes_siguiente = primer_dia_mes_siguiente.replace(day=monthrange(primer_dia_mes_siguiente.year, primer_dia_mes_siguiente.month)[1])
+        ultimo_dia_mes_siguiente = primer_dia_mes_siguiente + timedelta(days=34)
+        
+        eventos_mes_actual = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual])
+        eventos_mes_siguiente = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_siguiente, ultimo_dia_mes_siguiente])
+        
+        # Combinamos los eventos del mes actual y del mes siguiente
+        eventos = list(eventos_mes_actual) + list(eventos_mes_siguiente)
+    else:
+        # Si no estamos en la última semana o no es el día 25, obtenemos solo los eventos del mes actual
+        eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual])
 
-    for clase in clases:
-        evento = {
-            'id': clase.id,  # Debes asegurarte de tener un identificador único para cada evento
-            'title': clase.nombre,
-            'start': clase.fecha.strftime('%Y-%m-%d') + 'T' + clase.hora_inicio.strftime('%H:%M:%S'),
-            'end': clase.fecha.strftime('%Y-%m-%d') + 'T' + clase.hora_fin.strftime('%H:%M:%S'),
-            # Otros campos que puedas necesitar para el evento
-        }
-        eventos.append(evento)
-    #print(f"get_horarios_clase TODOS ARRAY CON ID, NOMBRE DE LA CLASE,FECHA HORA DE INICIO,FECHA HORA DE FIN DE LA CLASE: {eventos}")
-    #print(f"get_horarios_clase TODOS ARRAY CON ID, NOMBRE DE LA CLASE,FECHA HORA DE INICIO,FECHA HORA DE FIN DE LA CLASE: ")    
-    return JsonResponse(eventos, safe=False)
+    eventos_json = [{
+        'id': evento.id,
+        'title': evento.nombre,
+        'start': evento.fecha.strftime('%Y-%m-%d') + 'T' + evento.hora_inicio.strftime('%H:%M:%S'),
+        'end': evento.fecha.strftime('%Y-%m-%d') + 'T' + evento.hora_fin.strftime('%H:%M:%S'),
+    } for evento in eventos]
 
-
-
+    return JsonResponse(eventos_json, safe=False)
 
 
 
@@ -164,9 +175,10 @@ def capturar_id(request):
         data = json.loads(request.body)
         horarios_seleccionados = data.get('horariosSeleccionados', [])
 
-        # Procesamiento de los horarios seleccionados
+        # Lista para almacenar mensajes de respuesta
+        messages = []
+
         for horario_id in horarios_seleccionados:
-            # Verifica si el ID es válido y está presente en la ClaseNatacion
             try:
                 clase_natacion = ClaseNatacion.objects.get(pk=horario_id)
             except ClaseNatacion.DoesNotExist:
@@ -177,16 +189,22 @@ def capturar_id(request):
                 InscripcionClase.objects.create(usuario=request.user, clase_natacion=clase_natacion)
                 clase_natacion.cupos_disponibles -= 1
                 clase_natacion.save()  # Guarda la instancia actualizada
+                messages.append(f'Turno agendado para el horario con ID {horario_id}')
+            else:
+                messages.append(f'No se pudo agendar para el horario con ID {horario_id}: no hay cupos disponibles')
 
-        # Respuesta exitosa
-        return JsonResponse({'message': 'Proceso completado'})
+        # Componer la respuesta basada en los mensajes recopilados
+        response_data = {
+            'messages': messages,
+            'success': all('No se pudo agendar' not in msg for msg in messages)
+        }
+        return JsonResponse(response_data)
 
     except json.JSONDecodeError as e:
         return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
 
     except Exception as e:
         return JsonResponse({'error': 'Error interno del servidor'}, status=500)
-
 
 
 
