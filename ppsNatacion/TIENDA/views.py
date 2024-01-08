@@ -76,6 +76,7 @@ def generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin):
             fecha += timedelta(days=7)
     return horarios
 
+@permission_required('TIENDA.agregar_clase')
 @login_required
 def agregar_clase_natacion(request):
     if request.method == 'POST':
@@ -210,13 +211,15 @@ def capturar_id(request):
 
 @login_required
 def ver_turnos(request):
+    fecha_actual = datetime.now()
+    
     if request.user.is_superuser:
         # Si el usuario es superusuario, muestra todos los turnos
-        turnos = InscripcionClase.objects.all()
+        turnos = InscripcionClase.objects.filter(fecha_actual)
     else:
         # Si no es superusuario, muestra los turnos del usuario actual
-        turnos = InscripcionClase.objects.filter(usuario=request.user)
-
+        turnos = InscripcionClase.objects.filter(usuario=request.user, clase_natacion__fecha__gte=fecha_actual)
+        
     return render(request, 'tienda/ver_turnos.html', {'turnos': turnos})
 
 
