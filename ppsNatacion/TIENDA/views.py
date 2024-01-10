@@ -2,20 +2,19 @@ import json
 from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.query_utils import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseServerError
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
 from .forms import ClaseNatacionForm  # Importa el formulario de clase de natación
 from .models import ClaseNatacion, InscripcionClase
 from datetime import datetime, timedelta
 from django.contrib import messages
-from django.utils import timezone
-from django.http import HttpResponseServerError
-from django.shortcuts import HttpResponse
+from django.utils import timezone, translation
 from django.views.decorators.http import require_POST
 from calendar import monthrange
 from django.db import IntegrityError
 from django.db.models import F
+from django.utils.translation import gettext as _
 
 
 def home(request):
@@ -251,38 +250,58 @@ def cancelar_turno(request, turno_id):
     except Exception as e:
         return JsonResponse({'error': 'Error al cancelar el turno'}, status=500)
     
-    
+from django.utils.translation import gettext as _
+
+
+def calcular_precio(numero_clases):
+    if numero_clases == 1:
+        return 1250
+    elif numero_clases == 2:
+        return 5500
+    elif numero_clases == 3:
+        return 6000
+    elif numero_clases > 3:
+        return 6000 + (numero_clases - 3) * 500  # $6000 por las primeras 3 clases, luego $500 adicionales por cada clase adicional
 
 def lista_clases(request):
+    translation.activate('es')
     clases = ClaseNatacion.objects.all()
 
-    # Crear un diccionario para almacenar la información única de las clases
     clases_unicas = {}
+    precios = {}
+
+    # Calcular los precios para cada cantidad de clases
+    for i in range(1, 7):
+        precios[i] = calcular_precio(i)
 
     for clase in clases:
         nombre = clase.nombre
-        dias = clase.fecha.strftime('%A')
+        dias = [_(clase.fecha.strftime('%A'))]
         hora_inicio = clase.hora_inicio.strftime('%H:%M')
         hora_fin = clase.hora_fin.strftime('%H:%M')
-        precio = clase.precio
 
-        # Obtener una imagen para cada clase (si existe)
+        # Obtener la cantidad de cupos disponibles para la clase (asumiendo que esto se representa por ejemplo en 'cupos_disponibles')
+        cupos_disponibles = clase.cupos_disponibles
+
+        precio = calcular_precio(cupos_disponibles)
+
         imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
 
         if nombre not in clases_unicas:
             clases_unicas[nombre] = {
                 'nombre': nombre,
-                'dias': [dias],
+                'dias': dias,
                 'hora_inicio': hora_inicio,
                 'hora_fin': hora_fin,
                 'precio': precio,
-                'imagen': imagen  # Agregar la imagen al diccionario
+                'imagen': imagen
             }
         else:
-            if dias not in clases_unicas[nombre]['dias']:
-                clases_unicas[nombre]['dias'].append(dias)
-    
+            if dias[0] not in clases_unicas[nombre]['dias']:
+                clases_unicas[nombre]['dias'].append(dias[0])
+
     context = {
-        'clases': clases_unicas.values()
+        'clases': clases_unicas.values(),
+        'precios': precios  # Pasar los precios al contexto
     }
     return render(request, 'tienda/lista_clases.html', context)
