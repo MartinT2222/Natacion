@@ -1,0 +1,23 @@
+{% extends 'tienda/layout.html' %}
+
+{% block body %}
+
+{% for clase in clases %}
+    <div class="card" style="width: 18rem;">
+        {% if clase.imagen %}
+            <img src="{{ clase.imagen.url }}" class="card-img-top" alt="{{ clase.nombre }}">
+        {% endif %}
+        
+        <div class="card-body">
+            <h5 class="card-title">{{ clase.nombre }}</h5>
+            <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
+            <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
+            <p class="card-text">Precio: {{ clase.precio }}</p>
+            <!-- Agrega un botón o enlace para redirigir a más detalles si es necesario -->
+            <a href="#" class="btn btn-primary">Pagar</a>
+        </div>
+    </div>
+{% endfor %}
+
+
+{% endblock body %}

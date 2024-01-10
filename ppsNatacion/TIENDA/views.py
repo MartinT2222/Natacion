@@ -14,6 +14,8 @@ from django.http import HttpResponseServerError
 from django.shortcuts import HttpResponse
 from django.views.decorators.http import require_POST
 from calendar import monthrange
+from django.db import IntegrityError
+from django.db.models import F
 
 
 def home(request):
@@ -76,28 +78,37 @@ def generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin):
             fecha += timedelta(days=7)
     return horarios
 
-@permission_required('TIENDA.agregar_clase')
+
 @login_required
+@permission_required('TIENDA.agregar_clase')
 def agregar_clase_natacion(request):
     if request.method == 'POST':
-        clase_form = ClaseNatacionForm(request.POST)
+        clase_form = ClaseNatacionForm(request.POST, request.FILES)
         if clase_form.is_valid():
-            nueva_clase = clase_form.save(commit=False)  # Evitar guardar la instancia por ahora
+            hora_inicio = clase_form.cleaned_data['hora_inicio']
+            hora_fin = clase_form.cleaned_data['hora_fin']
+            dias_semana = request.POST.getlist('dias_semana')
 
-            hora_inicio = nueva_clase.hora_inicio
-            hora_fin = nueva_clase.hora_fin
-            dias_semana = request.POST.getlist('dias_semana')  # Obtener los días seleccionados desde el formulario
+            nueva_clase = clase_form.save(commit=False)
 
-            # Obtener horarios recurrentes para la nueva clase
             horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
 
             for fecha in horarios_recurrentes:
-                # Crear una nueva instancia de ClaseNatacion para cada fecha
-                nueva_clase.pk = None  # Asignar None al ID para crear una nueva instancia
-                nueva_clase.fecha = fecha  # Asignar la fecha generada
-                nueva_clase.save()  # Guardar la instancia de ClaseNatacion
+                try:
+                    nueva_instancia = ClaseNatacion.objects.create(
+                        nombre=nueva_clase.nombre,
+                        fecha=fecha,
+                        hora_inicio=hora_inicio,
+                        hora_fin=hora_fin,
+                        cupos_disponibles=nueva_clase.cupos_disponibles,
+                        precio=nueva_clase.precio,
+                        imagen=nueva_clase.imagen  # Asigna la imagen a cada instancia
+                    )
+                    nueva_instancia.save()
+                except IntegrityError as e:
+                    print(f"Error de integridad al guardar para la fecha {fecha}: {e}")
+                    # Manejo específico para la excepción de integridad, puedes agregar aquí lo que consideres necesario
 
-            # Redireccionar o mostrar mensajes de éxito después de guardar todas las instancias
             messages.success(request, 'Las clases se han guardado exitosamente!')
             return redirect('tienda:agregar_clase')
 
@@ -105,6 +116,8 @@ def agregar_clase_natacion(request):
         clase_form = ClaseNatacionForm()
 
     return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form})
+
+
 
 @login_required
 def asociar_usuario_clases(request):
@@ -215,7 +228,7 @@ def ver_turnos(request):
     
     if request.user.is_superuser:
         # Si el usuario es superusuario, muestra todos los turnos
-        turnos = InscripcionClase.objects.filter(fecha_actual)
+        turnos = InscripcionClase.objects.filter(clase_natacion__fecha__gte=fecha_actual)
     else:
         # Si no es superusuario, muestra los turnos del usuario actual
         turnos = InscripcionClase.objects.filter(usuario=request.user, clase_natacion__fecha__gte=fecha_actual)
@@ -237,3 +250,39 @@ def cancelar_turno(request, turno_id):
         return JsonResponse({'message': 'Turno cancelado exitosamente'})
     except Exception as e:
         return JsonResponse({'error': 'Error al cancelar el turno'}, status=500)
+    
+    
+
+def lista_clases(request):
+    clases = ClaseNatacion.objects.all()
+
+    # Crear un diccionario para almacenar la información única de las clases
+    clases_unicas = {}
+
+    for clase in clases:
+        nombre = clase.nombre
+        dias = clase.fecha.strftime('%A')
+        hora_inicio = clase.hora_inicio.strftime('%H:%M')
+        hora_fin = clase.hora_fin.strftime('%H:%M')
+        precio = clase.precio
+
+        # Obtener una imagen para cada clase (si existe)
+        imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
+
+        if nombre not in clases_unicas:
+            clases_unicas[nombre] = {
+                'nombre': nombre,
+                'dias': [dias],
+                'hora_inicio': hora_inicio,
+                'hora_fin': hora_fin,
+                'precio': precio,
+                'imagen': imagen  # Agregar la imagen al diccionario
+            }
+        else:
+            if dias not in clases_unicas[nombre]['dias']:
+                clases_unicas[nombre]['dias'].append(dias)
+    
+    context = {
+        'clases': clases_unicas.values()
+    }
+    return render(request, 'tienda/lista_clases.html', context)

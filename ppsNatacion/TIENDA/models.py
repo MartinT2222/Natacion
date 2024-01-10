@@ -7,8 +7,13 @@ class ClaseNatacion(models.Model):
     hora_inicio = models.TimeField()
     hora_fin = models.TimeField()
     cupos_disponibles = models.PositiveIntegerField(default=0)
-    # Otros campos relevantes para la clase de natación
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    imagen = models.ImageField(upload_to='clase_imagenes/', null=True, blank=True)  # Campo de imagen
 
+    def __str__(self):
+        return self.nombre
+    
+    
 class InscripcionClase(models.Model):
     usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     clase_natacion = models.ForeignKey(ClaseNatacion, on_delete=models.CASCADE)

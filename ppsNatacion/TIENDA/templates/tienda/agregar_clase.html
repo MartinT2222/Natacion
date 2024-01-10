@@ -4,16 +4,20 @@
   <a href="{% url 'tienda:home' %}" class="btn btn-primary">Volver al inicio</a>
   <h2>Agregar Clase de Natación</h2>
   {% if messages %}
+    <script>
+      console.log({{ messages }});
+    </script>
     {% for message in messages %}
       <div class="alert alert-success">
         {{ message }}
       </div>
     {% endfor %}
   {% endif %}
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ clase_form.as_p }}
     {{ horario_form.as_p }}
     <button type="submit">Agregar Clase</button>
   </form>
+  
 {% endblock body %}

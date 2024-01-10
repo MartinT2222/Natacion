@@ -17,7 +17,10 @@ class ClaseNatacionForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False  # Ajusta esto según tus necesidades
     )
+    
+    # Campo para la imagen
+    imagen = forms.ImageField(required=False)  
 
     class Meta:
         model = ClaseNatacion
-        fields = ['nombre', 'hora_inicio', 'hora_fin', 'cupos_disponibles']
+        fields = ['nombre', 'hora_inicio', 'hora_fin', 'cupos_disponibles', 'precio', 'imagen']

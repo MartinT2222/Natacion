@@ -17,4 +17,5 @@ urlpatterns = [
 #    path('alumnos/editar/<int:alumno_id>/', views.editar_alumno, name='edit_alumno'),
     path('cancelar_turno/<int:turno_id>/', views.cancelar_turno, name='cancelar_turno'),
     path('ver-turnos/', views.ver_turnos, name='ver_turnos'),
+    path('lista_clases/', views.lista_clases, name='lista_clases'),  # Nombre del path y vista asociada
 ]
