@@ -1,0 +1,25 @@
+{% extends 'tienda/layout.html' %}
+
+{% block body %}
+
+<!-- tienda/pago_producto.html -->
+
+<h2>Detalle del Pago</h2>
+
+{% for claseInfo in clases_info %}
+<div class="card" style="width: 18rem; margin: 30px;">
+    <!-- Agrega la información de cada clase -->
+    <h5 class="card-title">{{ claseInfo.claseNombre }}</h5>
+    <p class="card-text">Cupos Disponibles: {{ claseInfo.cuposDisponibles }}</p>
+    <p class="card-text">Días: {{ claseInfo.dias }}</p>
+    <p class="card-text">Hora: {{ claseInfo.horaInicio }} - {{ claseInfo.horaFin }}</p>
+    <!-- Agrega más detalles según tus necesidades -->
+    <p style="color: red;">Precio: {{ claseInfo.precio }}</p>
+    <!-- Agrega un formulario de pago aquí si es necesario -->
+</div>
+{% endfor %}
+
+<!-- Agrega un botón o enlace para proceder al pago -->
+<a href="#" class="btn btn-primary">Proceder al Pago</a>
+
+{% endblock %}

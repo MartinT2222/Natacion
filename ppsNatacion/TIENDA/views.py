@@ -28,10 +28,8 @@ def home(request):
         hora_fin = clase.hora_fin.strftime('%H:%M')
         precio = clase.precio  # Precio por 1 clase
         cupos_disponibles_pagos = 0
-
-        
         imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
-
+        
         if nombre not in clases_unicas:
             clases_unicas[nombre] = {
                 'nombre': nombre,
@@ -39,24 +37,26 @@ def home(request):
                 'hora_inicio': hora_inicio,
                 'hora_fin': hora_fin,
                 'precio': precio,
-                'precio_por_2_clases': precio * 2,  # Agrega los precios al diccionario
+                'precio_por_2_clases': precio * 2,
                 'precio_por_3_clases': precio * 3,
-                'precio_por_4_clases': (precio * 4),
+                'precio_por_4_clases': precio * 4,
                 'precio_por_5_clases': precio * 5,
                 'precio_por_6_clases': precio * 6,
                 'imagen': imagen,
                 'cupos': cupos_disponibles_pagos
+                
             }
         else:
             if dias[0] not in clases_unicas[nombre]['dias']:
                 clases_unicas[nombre]['dias'].append(dias[0])
     
+    print(f"cupos: {cupos_disponibles_pagos}")
     context = {
         'clases': clases_unicas.values(),
     }
+    
     # Renderiza la plantilla y envía el contexto
-    return render(request, 'tienda/index.html',context)
-
+    return render(request, 'tienda/index.html', context)
 
 
 def buscar(request):
@@ -298,3 +298,17 @@ def calcular_precio(nombre_clase, numero_clases):
     # Retorna -1 o algún valor por defecto si el nombre de la clase no está en el diccionario
     return -1
 
+def pago_producto(request):
+    clases_info_str = request.GET.get('clasesInfo')
+    if clases_info_str:
+        clases_info = json.loads(clases_info_str)
+    else:
+        clases_info = []
+
+    # Realiza cualquier lógica adicional relacionada con el pago si es necesario
+
+    context = {
+        'clases_info': clases_info,
+    }
+
+    return render(request, 'tienda/pago_producto.html', context)
