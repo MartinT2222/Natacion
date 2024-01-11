@@ -18,22 +18,17 @@ from django.utils.translation import gettext as _
 
 
 def home(request):
-
     translation.activate('es')
     clases = ClaseNatacion.objects.all()
-
     clases_unicas = {}
-    
-
     for clase in clases:
         nombre = clase.nombre
         dias = [_(clase.fecha.strftime('%A'))]
         hora_inicio = clase.hora_inicio.strftime('%H:%M')
         hora_fin = clase.hora_fin.strftime('%H:%M')
         precio = clase.precio  # Precio por 1 clase
-        cupos_disponibles = clase.cupos_disponibles
+        cupos_disponibles_pagos = 0
 
-        # Utiliza la función calcular_precio con el nombre de la clase y la cantidad de cupos disponibles
         
         imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
 
@@ -49,7 +44,8 @@ def home(request):
                 'precio_por_4_clases': (precio * 4),
                 'precio_por_5_clases': precio * 5,
                 'precio_por_6_clases': precio * 6,
-                'imagen': imagen
+                'imagen': imagen,
+                'cupos': cupos_disponibles_pagos
             }
         else:
             if dias[0] not in clases_unicas[nombre]['dias']:
