@@ -4,7 +4,7 @@
 
 
 
-
+<h1> Bienvenido a nuestra pagina Natacion</h1>
 
 <!--aqui va la pagina principal lo que ve en el body-->
 
@@ -41,6 +41,55 @@
     </button>
   </div>-->
 <!--fin carrusel-->
+<h2 style="width: 100%; height: 100%;">Lista de clases</h2>
+<div class="d-flex flex-wrap">
+    {% for clase in clases %}
+        <div class="card mb-3 mx-3" style="width: 18rem; margin: 30px">
+            {% if clase.imagen %}
+                <img src="{{ clase.imagen.url }}" class="card-img-top" alt="{{ clase.nombre }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ clase.nombre }}</h5>
+                <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
+                <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
+                <p style="color: red;">Precio por 1 clase: {{ clase.precio }}</p>
+                <p style="color: red;">Precio por 2 clases: {{ clase.precio_por_2_clases }}</p>
+                <p style="color: red;">Precio por 3 clases: {{ clase.precio_por_3_clases }}</p>
+                <p style="color: red;">Precio por 4 clases: {{ clase.precio_por_4_clases }}</p>
+                <p style="color: red;">Precio por 5 clases: {{ clase.precio_por_5_clases }}</p>
+                <p style="color: red;">Precio por 6 clases: {{ clase.precio_por_6_clases }}</p>
+
+                <!-- Selector de clases y Botón de pago -->
+                <label for="claseSelector_{{ clase.nombre }}">Selecciona el número de clases:</label>
+                <select class="claseSelector" id="claseSelector_{{ clase.nombre }}">
+                    <option value="1">1 clase</option>
+                    <option value="2">2 clases</option>
+                    <option value="3">3 clases</option>
+                    <option value="4">4 clases</option>
+                    <option value="5">5 clases</option>
+                    <option value="6">6 clases</option>
+                </select>
+                <button class="btn btn-primary btnPagar" data-clase-id="{{ clase.nombre }}">Pagar</button>
+                <!-- Resto de la información -->
+                <!-- Agrega un botón o enlace para redirigir a más detalles si es necesario -->
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Agrega un evento clic para cada botón de pago
+    document.querySelectorAll('.btnPagar').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var claseId = this.getAttribute('data-clase-id');
+            var claseSeleccionada = document.getElementById('claseSelector_' + claseId).value;
+            alert('Has seleccionado ' + claseSeleccionada + ' clases. Ahora puedes procesar el pago para la clase ' + claseId + '.');
+            
+            // Aquí puedes realizar las acciones necesarias para procesar el pago con la cantidad de clases seleccionadas.
+        });
+    });
+</script>
+
 
 {% endblock body %}
 

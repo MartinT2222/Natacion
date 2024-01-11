@@ -18,19 +18,48 @@ from django.utils.translation import gettext as _
 
 
 def home(request):
-    # Aquí puedes agregar la lógica que desees para la página de inicio
-    # Por ejemplo, podrías obtener algunos datos de la base de datos y pasarlos a la plantilla
-    # Luego renderiza la plantilla y envía los datos como contexto
 
-    # Ejemplo de datos (puedes personalizar estos datos según tu aplicación)
-    data = {
-        'titulo': 'Bienvenido a nuestro sitio',
-        'mensaje': 'Esto es un mensaje de bienvenida',
-        # Otros datos que desees enviar a la plantilla
+    translation.activate('es')
+    clases = ClaseNatacion.objects.all()
+
+    clases_unicas = {}
+    
+
+    for clase in clases:
+        nombre = clase.nombre
+        dias = [_(clase.fecha.strftime('%A'))]
+        hora_inicio = clase.hora_inicio.strftime('%H:%M')
+        hora_fin = clase.hora_fin.strftime('%H:%M')
+        precio = clase.precio  # Precio por 1 clase
+        cupos_disponibles = clase.cupos_disponibles
+
+        # Utiliza la función calcular_precio con el nombre de la clase y la cantidad de cupos disponibles
+        
+        imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
+
+        if nombre not in clases_unicas:
+            clases_unicas[nombre] = {
+                'nombre': nombre,
+                'dias': dias,
+                'hora_inicio': hora_inicio,
+                'hora_fin': hora_fin,
+                'precio': precio,
+                'precio_por_2_clases': precio * 2,  # Agrega los precios al diccionario
+                'precio_por_3_clases': precio * 3,
+                'precio_por_4_clases': (precio * 4),
+                'precio_por_5_clases': precio * 5,
+                'precio_por_6_clases': precio * 6,
+                'imagen': imagen
+            }
+        else:
+            if dias[0] not in clases_unicas[nombre]['dias']:
+                clases_unicas[nombre]['dias'].append(dias[0])
+    
+    context = {
+        'clases': clases_unicas.values(),
     }
-
     # Renderiza la plantilla y envía el contexto
-    return render(request, 'tienda/index.html', data)
+    return render(request, 'tienda/index.html',context)
 
 
 
@@ -253,55 +282,23 @@ def cancelar_turno(request, turno_id):
 from django.utils.translation import gettext as _
 
 
-def calcular_precio(numero_clases):
-    if numero_clases == 1:
-        return 1250
-    elif numero_clases == 2:
-        return 5500
-    elif numero_clases == 3:
-        return 6000
-    elif numero_clases > 3:
-        return 6000 + (numero_clases - 3) * 500  # $6000 por las primeras 3 clases, luego $500 adicionales por cada clase adicional
-
-def lista_clases(request):
-    translation.activate('es')
-    clases = ClaseNatacion.objects.all()
-
-    clases_unicas = {}
-    precios = {}
-
-    # Calcular los precios para cada cantidad de clases
-    for i in range(1, 7):
-        precios[i] = calcular_precio(i)
-
-    for clase in clases:
-        nombre = clase.nombre
-        dias = [_(clase.fecha.strftime('%A'))]
-        hora_inicio = clase.hora_inicio.strftime('%H:%M')
-        hora_fin = clase.hora_fin.strftime('%H:%M')
-
-        # Obtener la cantidad de cupos disponibles para la clase (asumiendo que esto se representa por ejemplo en 'cupos_disponibles')
-        cupos_disponibles = clase.cupos_disponibles
-
-        precio = calcular_precio(cupos_disponibles)
-
-        imagen = ClaseNatacion.objects.filter(nombre=nombre).first().imagen
-
-        if nombre not in clases_unicas:
-            clases_unicas[nombre] = {
-                'nombre': nombre,
-                'dias': dias,
-                'hora_inicio': hora_inicio,
-                'hora_fin': hora_fin,
-                'precio': precio,
-                'imagen': imagen
-            }
-        else:
-            if dias[0] not in clases_unicas[nombre]['dias']:
-                clases_unicas[nombre]['dias'].append(dias[0])
-
-    context = {
-        'clases': clases_unicas.values(),
-        'precios': precios  # Pasar los precios al contexto
+def calcular_precio(nombre_clase, numero_clases):
+    # Define un diccionario que mapea los nombres de las clases a sus precios respectivos
+    precios_clases = {
+        'Clase A': [1250, 5500, 6000, 6500, 7000, 7500],
+        'Clase B': [1300, 5600, 6100, 6600, 7100, 7600],
+        # Agrega más clases y sus precios respectivos aquí
     }
-    return render(request, 'tienda/lista_clases.html', context)
+
+    # Verifica si el nombre de la clase está en el diccionario de precios
+    if nombre_clase in precios_clases:
+        # Obtiene la lista de precios para la clase específica
+        precios = precios_clases[nombre_clase]
+
+        # Verifica si el número de clases es válido para obtener el precio correspondiente
+        if 1 <= numero_clases <= len(precios):
+            return precios[numero_clases - 1]  # El índice de lista comienza en 0, por eso se resta 1
+
+    # Retorna -1 o algún valor por defecto si el nombre de la clase no está en el diccionario
+    return -1
+

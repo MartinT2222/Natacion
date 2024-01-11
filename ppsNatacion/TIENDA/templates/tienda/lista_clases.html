@@ -14,10 +14,12 @@
                     <h5 class="card-title">{{ clase.nombre }}</h5>
                     <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
                     <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
-                    <p>Precio por 1 clase: {{ precios.1 }}</p>
-                    <p>Precio por 2 clases: {{ precios.2 }}</p>
-                    <p>Precio por 3 clases: {{ precios.3 }}</p>
-                    <!-- ... y así sucesivamente -->
+                    <p>Precio por 1 clase: {{ clase.precio }}</p>
+                    <p>Precio por 2 clases: {{ clase.precio_por_2_clases }}</p>
+                    <p>Precio por 3 clases: {{ clase.precio_por_3_clases }}</p>
+                    <!-- Resto de la información -->
+
+                    <!-- Resto de la información -->
                     <!-- Agrega un botón o enlace para redirigir a más detalles si es necesario -->
                     <a href="#" class="btn btn-primary">Pagar</a>
                 </div>
