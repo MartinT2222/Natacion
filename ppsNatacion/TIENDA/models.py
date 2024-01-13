@@ -39,6 +39,17 @@ class InscripcionClase(models.Model):
 
 
 
+class ComprasClase(models.Model):
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    clase_comprada = models.CharField(max_length=100, null=True, blank=True)
+    precio_clase = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    fecha_compra = models.DateTimeField(auto_now_add=True)
+    cupos_disponibles_pagos = models.IntegerField(blank=True, null=True)
+    def __str__(self):
+        return f'{self.usuario.username} - {self.clase_comprada}'
+
+
+
 
 
 

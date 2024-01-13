@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponseServerError
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
 from .forms import ClaseNatacionForm  # Importa el formulario de clase de natación
-from .models import ClaseNatacion, InscripcionClase
+from .models import ClaseNatacion, InscripcionClase, ComprasClase
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.utils import timezone, translation
@@ -15,7 +15,7 @@ from calendar import monthrange
 from django.db import IntegrityError
 from django.db.models import F
 from django.utils.translation import gettext as _
-
+from django.db import transaction
 
 def home(request):
     translation.activate('es')
@@ -163,8 +163,12 @@ def asociar_usuario_clases(request):
             # Captura cualquier excepción y muestra información útil para depuración
             print(f"Error: {e}")
             return HttpResponseServerError('Internal Server Error')
+    # Obtener las clases compradas por el usuario autenticado
+    clases_compradas = ComprasClase.objects.filter(usuario=request.user).values_list('clase_comprada', flat=True)
 
-    clases = ClaseNatacion.objects.all()
+    clases = ClaseNatacion.objects.filter(nombre__in=clases_compradas)
+
+
     #print(f"asociar_usuario_clases: {clases}")
     #print(f"Me trae todos los ClaseNatacion object (1)> al entrar en la vista Asiciar usuarios a clases: ")
     
@@ -179,6 +183,9 @@ def get_horarios_clase(request):
     primer_dia_mes_actual = fecha_actual
     ultimo_dia_mes_actual = fecha_actual.replace(day=monthrange(fecha_actual.year, fecha_actual.month)[1])
     
+    clases_compradas = ComprasClase.objects.filter(usuario=request.user).values_list('clase_comprada', flat=True)
+    clases = ClaseNatacion.objects.filter(nombre__in=clases_compradas)
+
     # Si estamos en la última semana del mes actual o la fecha actual es el día 25
     if fecha_actual.day == 25 or fecha_actual + timedelta(7) > ultimo_dia_mes_actual:
         # Obtenemos los eventos del mes siguiente hasta completar 35 días
@@ -186,14 +193,14 @@ def get_horarios_clase(request):
         ultimo_dia_mes_siguiente = primer_dia_mes_siguiente.replace(day=monthrange(primer_dia_mes_siguiente.year, primer_dia_mes_siguiente.month)[1])
         ultimo_dia_mes_siguiente = primer_dia_mes_siguiente + timedelta(days=34)
         
-        eventos_mes_actual = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual])
-        eventos_mes_siguiente = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_siguiente, ultimo_dia_mes_siguiente])
+        eventos_mes_actual = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas)
+        eventos_mes_siguiente = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_siguiente, ultimo_dia_mes_siguiente], nombre__in=clases_compradas)
         
         # Combinamos los eventos del mes actual y del mes siguiente
         eventos = list(eventos_mes_actual) + list(eventos_mes_siguiente)
     else:
         # Si no estamos en la última semana o no es el día 25, obtenemos solo los eventos del mes actual
-        eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual])
+        eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas)
 
     eventos_json = [{
         'id': evento.id,
@@ -216,34 +223,52 @@ def capturar_id(request):
         # Lista para almacenar mensajes de respuesta
         messages = []
 
-        for horario_id in horarios_seleccionados:
-            try:
-                clase_natacion = ClaseNatacion.objects.get(pk=horario_id)
-            except ClaseNatacion.DoesNotExist:
-                return JsonResponse({'error': f'El horario con ID {horario_id} no existe'}, status=400)
+        with transaction.atomic():
+            for horario_id in horarios_seleccionados:
+                try:
+                    clase_natacion = ClaseNatacion.objects.get(pk=horario_id)
+                except ClaseNatacion.DoesNotExist:
+                    return JsonResponse({'error': f'El horario con ID {horario_id} no existe'}, status=400)
 
-            # Verifica y reduce los cupos disponibles
-            if clase_natacion.cupos_disponibles > 0:
-                InscripcionClase.objects.create(usuario=request.user, clase_natacion=clase_natacion)
-                clase_natacion.cupos_disponibles -= 1
-                clase_natacion.save()  # Guarda la instancia actualizada
-                messages.append(f'Turno agendado para el horario con ID {horario_id}')
-            else:
-                messages.append(f'No se pudo agendar para el horario con ID {horario_id}: no hay cupos disponibles')
+                # Verifica si el usuario ya está inscrito en esta clase
+                existe_inscripcion = InscripcionClase.objects.filter(usuario=request.user, clase_natacion=clase_natacion).exists()
+
+                if existe_inscripcion:
+                    messages.append(f'Ya estás inscrito para el horario con ID {horario_id}')
+                elif clase_natacion.cupos_disponibles > 0:
+                    # Si no está inscrito y hay cupos disponibles, proceder con la inscripción
+                    InscripcionClase.objects.create(usuario=request.user, clase_natacion=clase_natacion)
+                    clase_natacion.cupos_disponibles -= 1
+                    
+
+                    # Buscar el registro existente en ComprasClase y actualizar cupos_disponibles_pagos
+                    compra_clase = ComprasClase.objects.filter(usuario=request.user, clase_comprada=clase_natacion.nombre).first()
+
+                    if compra_clase:
+                        compra_clase.cupos_disponibles_pagos -= 1
+                        compra_clase.save()
+                        clase_natacion.save()
+                    else:
+                        # Manejar el caso donde no se encuentra el registro en ComprasClase
+                        print(f'No se encontró un registro en ComprasClase para la clase {clase_natacion.nombre}')
+
+                    messages.append(f'Turno agendado para el horario con ID {horario_id}')
+                else:
+                    messages.append(f'No se pudo agendar para el horario con ID {horario_id}: no hay cupos disponibles')
 
         # Componer la respuesta basada en los mensajes recopilados
         response_data = {
             'messages': messages,
-            'success': all('No se pudo agendar' not in msg for msg in messages)
+            'success': all('No se pudo agendar' not in msg for msg in messages),
+            'success_message': 'Inscripción exitosa' if all('No se pudo agendar' not in msg for msg in messages) else ''
         }
         return JsonResponse(response_data)
 
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         return JsonResponse({'error': 'Formato JSON inválido'}, status=400)
 
     except Exception as e:
-        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
-
+        return JsonResponse({'error': f'Error interno del servidor: {str(e)}'}, status=500)
 
 
 @login_required
@@ -298,17 +323,44 @@ def calcular_precio(nombre_clase, numero_clases):
     # Retorna -1 o algún valor por defecto si el nombre de la clase no está en el diccionario
     return -1
 
+from django.views.decorators.csrf import csrf_exempt  # Importa el decorador csrf_exempt
+from urllib.parse import unquote
+
 def pago_producto(request):
     clases_info_str = request.GET.get('clasesInfo')
+    # Lista para almacenar mensajes de respuesta
+    messages = []
     if clases_info_str:
         clases_info = json.loads(clases_info_str)
+        usuario_actual = request.user
+
+        # Verificar si el pago fue aprobado (puedes adaptar esto según tus necesidades)
+        pago_aprobado = True    # Coloca aquí tu lógica para determinar si el pago fue aprobado
+        if pago_aprobado:
+        # Actualizar el valor de cupos_disponibles_pagos
+            for claseInfo in clases_info:
+                compra_clase = ComprasClase.objects.create(
+                    usuario=usuario_actual,
+                    clase_comprada=claseInfo['claseNombre'],
+                    precio_clase=float(claseInfo['precio'].replace(',', '.')),
+                    cupos_disponibles_pagos=claseInfo['cuposDisponibles'],
+                    fecha_compra=timezone.now()  # Asigna la fecha actual
+                )
+                compra_clase.save()
+            messages.append('Pago aprobado. Compras registradas correctamente.')
+        else:
+            messages.append('Pago desaprobado. No se realizaron compras.')
+            # Lógica para manejar un pago no aprobado
+            
+            # Por ejemplo, renderizar una página de error
+            messages.append(f'pago desaprobado ')
     else:
         clases_info = []
-
     # Realiza cualquier lógica adicional relacionada con el pago si es necesario
-
+    # Obtener el usuario actual
     context = {
         'clases_info': clases_info,
+        'messages': messages,
     }
-
     return render(request, 'tienda/pago_producto.html', context)
+

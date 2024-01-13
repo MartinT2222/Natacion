@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ClaseNatacion, InscripcionClase
+from .models import ClaseNatacion, InscripcionClase, ComprasClase
 
 
 @admin.register(ClaseNatacion)
@@ -19,3 +19,8 @@ class InscripcionClaseAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'clase_natacion', 'fecha_inscripcion', 'obtener_nombre_clase', 'obtener_fecha', 'obtener_hora_inicio', 'obtener_hora_fin', 'obtener_cupos_disponibles')
     search_fields = ('usuario__username', 'clase_natacion__nombre')
     list_filter = ('fecha_inscripcion',)
+
+@admin.register(ComprasClase)
+class ComprasClaseAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'clase_comprada', 'precio_clase', 'fecha_compra', 'cupos_disponibles_pagos']
+    search_fields = ['usuario__username', 'clase_comprada']

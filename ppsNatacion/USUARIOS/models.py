@@ -9,8 +9,7 @@ class CustomUser(AbstractUser):
     edad = models.IntegerField(default=18)  # O cualquier valor predeterminado que desees
     telefono_emergencia = models.CharField(max_length=15)
     alergias = models.TextField(blank=True, null=True)
-    cupos_disponibles_pagos = models.IntegerField(blank=True, null=True)
-    
+
     def __str__(self):
         return self.username
 

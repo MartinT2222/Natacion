@@ -1,5 +1,5 @@
 {% extends 'tienda/layout.html' %}
-
+{% load static %}
 {% block body %}
 
 <!-- tienda/pago_producto.html -->
@@ -20,6 +20,41 @@
 {% endfor %}
 
 <!-- Agrega un botón o enlace para proceder al pago -->
-<a href="#" class="btn btn-primary">Proceder al Pago</a>
+<button class="btn btn-primary" id="procederAlPago">Proceder al Pago</button>
+
+  <script>
+    document.getElementById('procederAlPago').addEventListener('click', function() {
+        // Obtén la información de la clase seleccionada
+        var selectedClass = {
+            claseNombre: "{{ clases_info.0.claseNombre }}",
+            cuposDisponibles: "{{ clases_info.0.cuposDisponibles }}",
+            dias: "{{ clases_info.0.dias }}",
+            horaInicio: "{{ clases_info.0.horaInicio }}",
+            horaFin: "{{ clases_info.0.horaFin }}",
+            precio: "{{ clases_info.0.precio }}"
+        };
+
+        // Envia la información al servidor mediante una petición AJAX
+        fetch('/pago_producto/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ claseInfo: selectedClass })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Maneja la respuesta del servidor
+            alert(data.message);  // Puedes personalizar esto según tu lógica
+            if (data.success) {
+                // Redirige o realiza otras acciones después de un pago exitoso
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+  </script>
 
 {% endblock %}
