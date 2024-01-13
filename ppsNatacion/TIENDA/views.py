@@ -16,6 +16,7 @@ from django.db import IntegrityError
 from django.db.models import F
 from django.utils.translation import gettext as _
 from django.db import transaction
+from decimal import Decimal
 
 def home(request):
     translation.activate('es')
@@ -335,18 +336,36 @@ def pago_producto(request):
         usuario_actual = request.user
 
         # Verificar si el pago fue aprobado (puedes adaptar esto según tus necesidades)
-        pago_aprobado = True    # Coloca aquí tu lógica para determinar si el pago fue aprobado
+        pago_aprobado = False    # Coloca aquí tu lógica para determinar si el pago fue aprobado
         if pago_aprobado:
-        # Actualizar el valor de cupos_disponibles_pagos
+            # Actualizar el valor de cupos_disponibles_pagos o crear una nueva compra
             for claseInfo in clases_info:
-                compra_clase = ComprasClase.objects.create(
+                clase_nombre = claseInfo['claseNombre']
+                precio_clase = float(claseInfo['precio'].replace(',', '.'))
+                cupos_disponibles = claseInfo['cuposDisponibles']
+                
+                # Verificar si ya existe una compra para esta clase
+                compra_existente = ComprasClase.objects.filter(
                     usuario=usuario_actual,
-                    clase_comprada=claseInfo['claseNombre'],
-                    precio_clase=float(claseInfo['precio'].replace(',', '.')),
-                    cupos_disponibles_pagos=claseInfo['cuposDisponibles'],
-                    fecha_compra=timezone.now()  # Asigna la fecha actual
-                )
-                compra_clase.save()
+                    clase_comprada=clase_nombre
+                ).first()
+
+                if compra_existente:
+                    # Si existe, actualizar la compra existente
+                    compra_existente.precio_clase += Decimal(str(precio_clase))
+                    compra_existente.cupos_disponibles_pagos += cupos_disponibles
+                    compra_existente.save()
+                else:
+                    # Si no existe, crear una nueva compra
+                    compra_clase = ComprasClase.objects.create(
+                        usuario=usuario_actual,
+                        clase_comprada=clase_nombre,
+                        precio_clase=precio_clase,
+                        cupos_disponibles_pagos=cupos_disponibles,
+                        fecha_compra=timezone.now()  # Asigna la fecha actual
+                    )
+                    compra_clase.save()
+
             messages.append('Pago aprobado. Compras registradas correctamente.')
         else:
             messages.append('Pago desaprobado. No se realizaron compras.')
@@ -363,4 +382,3 @@ def pago_producto(request):
         'messages': messages,
     }
     return render(request, 'tienda/pago_producto.html', context)
-
