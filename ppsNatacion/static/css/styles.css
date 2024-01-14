@@ -1,59 +1,86 @@
+/* Reset de márgenes y rellenos por defecto */
+body h1, body h2, body h3, body p {
+    margin: 0;  /* Ajusta según sea necesario o según el estilo de tu página */
+}
 
+/* Estilos para el cuerpo de la página */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ajusta según sea necesario */
+    margin: 0;
+}
 
-
-
-
-.btn-ver-mas{
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background-color: #D97925; /* Color de fondo */
-    color: #FFFFFF; /* Color del texto */
-    padding: 5px 10px; /* Espaciado interior */
+/* Ajustes para el cuerpo y el HTML */
+body, html {
+    margin: 0;
+    padding: 0;
+    position: relative;
+    margin-bottom: 0px; /* ajusta según sea necesario */
+    
 }
 
 
-
-.btn-cart{
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background-color: #3B873B; /* Color de fondo */
-    color: #FFFFFF; /* Color del texto */
-    padding: 5px 10px; /* Espaciado interior */
+.container {
+    flex: 1;
+    margin-top: 80px;
+    margin-bottom: 50px;
 }
 
-.carta-producto, .carta-categoria {
+/* Estilos para la barra de navegación */
+.navbar {
+    background-color: #112A4A;
+}
+
+/* Estilos para el logotipo en la barra de navegación */
+.navbar-brand {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Estilos para los enlaces en la barra de navegación */
+.navbar-nav .nav-link {
+    color: #ffffff;
+    margin-right: 15px;
+}
+
+/* Estilos para el botón de búsqueda */
+.navbar-form {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos para el formulario de búsqueda */
+.navbar-form input {
+    margin-right: 10px;
+}
+
+/* Estilos para el pie de página */
+.footer {
+    background-color: #112A4A;
+    color: #DDA337;
+    text-align: center;
+    padding: 20px 0;
     width: 100%;
-    height: 100%;
-    margin: 10px; /* Agrega un margen alrededor de la tarjeta */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Agrega un sombreado sutil */
 }
 
-
-
-.d-item{
-    height: 500px;
+/* Estilos para los enlaces del pie de página */
+.footer a {
+    color: #D5A877;
 }
+
+/* index */
+#carouselExampleIndicators {
+    width: 100%; /* Ocupa el 100% del ancho disponible */
+    height: 600px; /* Ajusta la altura según sea necesario */
+    overflow: hidden; /* Evita que las imágenes se desborden */
+}
+
+.carousel-item {
+    height: 100%; /* Ajusta la altura de cada elemento del carrusel */
+}
+
 .d-img{
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.6);
-}
-
-/* Estilos para la letra */
-.custom-text {
-    font-family: Arial, sans-serif; /* Cambia la fuente según lo que necesites */
-    font-size: 16px; /* Tamaño de la fuente en píxeles */
-    color: #FFE6C5; /* Color de la fuente en hexadecimal o nombre de color */
-}
-.ultimos-text {
-    font-size: 36px; /* Tamaño de la fuente en píxeles */
-    color: #FFE6C5; /* Color de la fuente en hexadecimal o nombre de color */
-    font-family: Arial, sans-serif; /* Cambia la fuente según lo que necesites */
-    margin: 35px; /* Agrega un margen alrededor de la tarjeta */
-}
-
-.fondo-formulario-color{
-    background-color: #D5A877;
 }
