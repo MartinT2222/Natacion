@@ -9,6 +9,9 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>SPARTA CLUB DE NATACION</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+    <script src="{% static 'js/particles.min.js' %}"></script>
+
     <!-- Cargar jQuery desde la carpeta local -->
     <script src="{% static 'node_modules/jquery/dist/jquery.min.js' %}"></script>
 
@@ -23,6 +26,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'DataTables/datatables.min.css' %}">
     <script type="text/javascript" src="{% static 'DataTables/datatables.min.js' %}"></script>
     
+
     <script src="{% static 'js/script.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 
@@ -37,95 +41,95 @@
     
 <!-- Otros archivos necesarios de FullCalendar -->
 
-<nav class="navbar navbar-dark  fixed-top" style="background-color: #112A4A">
-    <div class="container-fluid" >
-        <a class="navbar-brand" href="{% url 'tienda:home' %}" style=""><img src="{% static 'media/img/logoblanco.png' %}" alt="Logo de la tienda" width="50" height="50">SPARTA CLUB DE NATACION</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"     
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-            aria-label="Toggle navigation">
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar"
-            aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar"
-            aria-labelledby="offcanvasDarkNavbarLabel" style="background-color: #112A4A">
-            <div class="offcanvas-header" >
-                <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Menu</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                    aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-                <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'tienda:home' %}">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Acerca de</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="mailto: contacto@SPARTACLUBNATACION.com">Contacto</a>
-                    </li>
-                    {% if perms.TIENDA.lista_alumnos %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tienda:lista_alumnos' %}" style="color: #ffffff;">Lista alumnos</a>
-                    </li>
-                    {% endif %}
-                    {% if perms.TIENDA.agregar_clase %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tienda:agregar_clase' %}" style="color: #ffffff;">Agregar Clases</a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tienda:asociar_usuario_clases' %}" style="color: #ffffff;">Calendario de Clases</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tienda:ver_turnos' %}" style="color: #ffffff;">Ver Turnos</a>
-                    </li>
-                </ul>
-                <div class="d-grid gap-2 d-md-block">
-                    {% if user.is_authenticated %}
-                        <div class="dropdown">
-                            <span class="navbar-text" style="color: #ffffff">Bienvenido!</span>
-                            <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                {{user.username}}
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Salir </a></li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <button class="btn btn-outline-success" type="button" style="background-color: #3B873B; color: white;">
-                            <a href="{% url 'login' %}" style="color: inherit; text-decoration: none;">Ingresar</a>
-                        </button>
-                        <button class="btn btn-outline-info" type="button" style="background-color: #D97925; color: white;">
-                            <a href="{% url 'USUARIOS:registrarse' %}" style="color: inherit; text-decoration: none;">Registrarse</a>
-                        </button>
-                    {% endif %}
-                </div>
-                <form action="{% url 'tienda:buscar' %}">
-                    <input name="buscar" type="text" placeholder="buscar...">
-                    <button type="submit" class="btn btn-outline-info">Buscar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</nav>
-
-
 </head>
 
 <body>                                                          
+<div id="particles-js"></div>
+    <nav class="navbar navbar-dark  fixed-top" style="background-color: #112A4A">
+        
+        <div class="container-fluid" >
+            <a class="navbar-brand" href="{% url 'tienda:home' %}" style=""><img src="{% static 'media/img/logoblanco.png' %}" alt="Logo de la tienda" width="50" height="50">SPARTA CLUB DE NATACION</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"     
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+    
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar"
+                aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar"
+                aria-labelledby="offcanvasDarkNavbarLabel" style="background-color: #112A4A">
+                <div class="offcanvas-header" >
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'tienda:home' %}">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Acerca de</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="mailto: contacto@SPARTACLUBNATACION.com">Contacto</a>
+                        </li>
+                        {% if perms.TIENDA.lista_alumnos %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tienda:lista_alumnos' %}" style="color: #ffffff;">Lista alumnos</a>
+                        </li>
+                        {% endif %}
+                        {% if perms.TIENDA.agregar_clase %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tienda:agregar_clase' %}" style="color: #ffffff;">Agregar Clases</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tienda:asociar_usuario_clases' %}" style="color: #ffffff;">Calendario de Clases</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'tienda:ver_turnos' %}" style="color: #ffffff;">Ver Turnos</a>
+                        </li>
+                    </ul>
+                    <div class="d-grid gap-2 d-md-block">
+                        {% if user.is_authenticated %}
+                            <div class="dropdown">
+                                <span class="navbar-text" style="color: #ffffff">Bienvenido!</span>
+                                <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{user.username}}
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}">Salir </a></li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <button class="btn btn-outline-success" type="button" style="background-color: #3B873B; color: white;">
+                                <a href="{% url 'login' %}" style="color: inherit; text-decoration: none;">Ingresar</a>
+                            </button>
+                            <button class="btn btn-outline-info" type="button" style="background-color: #D97925; color: white;">
+                                <a href="{% url 'USUARIOS:registrarse' %}" style="color: inherit; text-decoration: none;">Registrarse</a>
+                            </button>
+                        {% endif %}
+                    </div>
+                    <form action="{% url 'tienda:buscar' %}">
+                        <input name="buscar" type="text" placeholder="buscar...">
+                        <button type="submit" class="btn btn-outline-info">Buscar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
 
+    
+     {% block carrusel %}
 
-{% block carrusel %}
-
-{% endblock carrusel %}
-
-
+        {% endblock carrusel %}
 
     <div class="container">
+
+   
 
         {% block body %}
 
@@ -144,8 +148,58 @@
         </div>
         
     </footer>
-    
 
+    <script>
+        // Llamada a la función particlesJS con el ID del contenedor y la configuración
+        particlesJS("particles-js", {
+            // Configuración de las partículas
+            "particles": {
+                // Configuración del número y densidad de partículas
+                "number": {
+                    "value": 5, // Número total de partículas
+                    "density": {
+                        "enable": true, // Habilitar densidad
+                        "value_area": 800 // Área en la que se distribuirán las partículas
+                    }
+                },
+                // Configuración del color de las partículas
+                "color": {
+                    "value": "#82C7F5" // Color de las partículas en formato hexadecimal
+                },
+                // Configuración de la forma de las partículas
+                "shape": {
+                    "type": "circle", // Tipo de forma (círculo en este caso)
+                    "stroke": {
+                        "width": 0, // Ancho del borde de la forma
+                        "color": "#000000" // Color del borde de la forma
+                    },
+                    "polygon": {
+                        "nb_sides": 5 // Número de lados para polígonos
+                    }
+                },
+                // Configuración de la opacidad de las partículas
+                "opacity": {
+                    "value": 0.3, // Valor de opacidad
+                    "random": false, // Opacidad aleatoria
+                    "anim": {
+                        "enable": false, // Animación de opacidad habilitada
+                        "speed": 1, // Velocidad de la animación
+                        "opacity_min": 0.1, // Valor mínimo de opacidad durante la animación
+                        "sync": false // Sincronización de la animación
+                    }
+                },
+            },
+            // Configuración de la interactividad de las partículas
+            "interactivity": {
+                "events": {
+                    "onhover": {
+                        "enable": true, // Habilitar evento al pasar el ratón por encima
+                        "mode": "repulse" // Modo del evento (repulsión en este caso)
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
