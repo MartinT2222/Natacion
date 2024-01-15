@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 from django.db import transaction
 from decimal import Decimal
 
+
 def home(request):
     translation.activate('es')
     clases = ClaseNatacion.objects.all()

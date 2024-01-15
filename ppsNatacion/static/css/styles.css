@@ -84,3 +84,114 @@ body, html {
     height: 100%;
     object-fit: cover;
 }
+
+
+
+/* ESTILOS DE EL FORMULARIO DE AGREGAR CLASE */
+
+
+/* Estilos para el formulario en general */
+.custom-form {
+    margin-top: 3rem;
+}
+
+/* Estilos para las filas del formulario */
+.custom-form .row {
+    margin-bottom: 3rem; /* Espacio entre las filas */
+}
+
+/* Estilos para los grupos de formularios */
+.custom-form .form-group {
+    margin-bottom: 1rem; /* Espacio entre los elementos dentro de un grupo de formularios */
+}
+
+/* Estilos para las etiquetas de los campos de formulario */
+.custom-form .col-form-label {
+    font-weight: bold; /* Hace que las etiquetas de los campos de formulario sean más visibles */
+}
+
+/* Estilos para el botón de envío */
+.custom-form .btn-primary {
+    background-color: #6C3483; /* Color de fondo del botón */
+    color: #fff; /* Color del texto del botón */
+    border: none; /* Sin borde */
+    padding: 0.5rem 1.5rem; /* Relleno del botón */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    /* Otros estilos según tus preferencias */
+}
+
+/* Estilos para la clase de alerta de éxito */
+.custom-form .alert-success {
+    margin-top: 1rem; /* Espacio superior de la alerta de éxito */
+    padding: 1rem; /* Relleno de la alerta de éxito */
+    background-color: #d4edda; /* Color de fondo de la alerta de éxito */
+    border: 1px solid #c3e6cb; /* Borde de la alerta de éxito */
+    border-radius: 5px; /* Bordes redondeados */
+    color: #155724; /* Color del texto de la alerta de éxito */
+}
+
+/* Ajusta el espacio entre el botón "Volver al inicio" y el contenido superior e inferior */
+.btn-volver {
+    background-color: #3498DB!important; 
+    /*margin-bottom: 1.5rem;  Espacio entre el botón y el contenido inferior */
+    /*margin-top: 5rem;  Espacio entre el botón y el contenido superior */
+}
+
+.titulo {
+   margin-bottom: 1.5rem;  /* Espacio entre el botón y el contenido inferior */
+   margin-top: 5rem;  /* Espacio entre el botón y el contenido superior */
+}
+
+/* Estilos para el botón de envío */
+.btn-enviar {
+    background-color: #6C3483; /* Color de fondo del botón */
+    color: #fff; /* Color del texto del botón */
+    border: none; /* Sin borde */
+    padding: 0.5rem 1.5rem; /* Relleno del botón */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    /* Otros estilos según tus preferencias */
+}
+
+/* Estilos para la etiqueta de saludo */
+.saludo-label {
+    color: #6C3483; /* Color del texto */
+    font-size: 1.2em; /* Tamaño de la fuente */
+    /* Otros estilos según tus preferencias */
+}
+
+/* Estilos para el formulario */
+#claseForm {
+    /* max-width: 400px; Ancho máximo del formulario */
+    margin: 0 auto; /* Centrar el formulario en la página */
+    padding: 15px; /* Relleno interno del formulario */
+    background-color: #f5f5f5; /* Color de fondo del formulario */
+    border: 1px solid #f5f5f5; /* Borde del formulario */
+    border-radius: 8px; /* Bordes redondeados del formulario */
+}
+
+/* Estilos para los campos ocultos */
+#claseForm input[type="hidden"] {
+    /* Puedes agregar estilos específicos para los campos ocultos aquí si es necesario */
+    display: block; /* Cambiar a "block" si quieres que ocupen su propia línea */
+    margin-bottom: 20px; /* Añadir un margen inferior para separar de otros elementos */
+    color: #ffffff; /* Color del texto para campos ocultos */
+    /* Otros estilos según tus preferencias */
+}
+
+/* Estilos para el contenedor de información del evento */
+#informacionEvento {
+    margin-top: 20px; /* Espacio superior entre el formulario y el contenedor de información */
+    padding: 10px; /* Relleno interno del contenedor de información */
+    background-color: #2980B9; /* Color de fondo del contenedor de información */
+    border: 1px solid #ccc; /* Borde del contenedor de información */
+    border-radius: 4px; /* Bordes redondeados del contenedor de información */
+}
+
+/* Estilos para los elementos internos del contenedor de información */
+#informacionEvento p ,h3{
+    margin: 0; /* Elimina los márgenes predeterminados de los párrafos dentro del contenedor de información */
+    color: #ffffff; /* Color del texto dentro del contenedor de información */
+    margin-top: 1rem;
+}

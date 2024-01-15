@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block body %}
-  <a href="{% url 'tienda:home' %}" class="btn btn-primary">Volver al inicio</a>
-  <h2>Lista de Alumnos</h2>
+  
+  <h2 class="titulo">Lista de Alumnos</h2>
   {% csrf_token %}
   <div class="row">
     <div class="col-md-12">
@@ -45,5 +45,7 @@
       </table>
     </div>
   </div>
+  <a href="{% url 'tienda:home' %}" class="btn btn-primary btn-volver">Volver al inicio</a>
 </div>
+
 {% endblock body %}

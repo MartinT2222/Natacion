@@ -16,7 +16,7 @@
               <img src="{% static 'media/img/agua2.jpg' %}" class="d-block w-100 d-img" alt="...">
             </div>
             <div class="carousel-item d-item">
-              <img src="{% static 'media/img/agua1.png' %}" class="d-block w-100 d-img" alt="...">
+              <img src="{% static 'media/img/R.jpeg' %}" class="d-block w-100 d-img" alt="...">
             </div>
           </div>
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
@@ -44,12 +44,12 @@
                 <h5 class="card-title">{{ clase.nombre }}</h5>
                 <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
                 <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
-                <p style="color: red;">Precio por 1 clase: {{ clase.precio }}</p>
-                <p style="color: red;">Precio por 2 clases: {{ clase.precio_por_2_clases }}</p>
-                <p style="color: red;">Precio por 3 clases: {{ clase.precio_por_3_clases }}</p>
-                <p style="color: red;">Precio por 4 clases: {{ clase.precio_por_4_clases }}</p>
-                <p style="color: red;">Precio por 5 clases: {{ clase.precio_por_5_clases }}</p>
-                <p style="color: red;">Precio por 6 clases: {{ clase.precio_por_6_clases }}</p>
+                <p style="color: #1F618D;">Precio por 1 clase: {{ clase.precio }}</p>
+                <p style="color: #1F618D;">Precio por 2 clases: {{ clase.precio_por_2_clases }}</p>
+                <p style="color: #1F618D;">Precio por 3 clases: {{ clase.precio_por_3_clases }}</p>
+                <p style="color: #1F618D;">Precio por 4 clases: {{ clase.precio_por_4_clases }}</p>
+                <p style="color: #1F618D;">Precio por 5 clases: {{ clase.precio_por_5_clases }}</p>
+                <p style="color: #1F618D;">Precio por 6 clases: {{ clase.precio_por_6_clases }}</p>
 
                 <!-- Selector de clases y Botón de pago -->
                 <label for="claseSelector_{{ clase.nombre }}">Selecciona el número de clases:</label>
