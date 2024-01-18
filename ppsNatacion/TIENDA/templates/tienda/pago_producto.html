@@ -8,14 +8,18 @@
 
 <div id="claseInfoContainer"></div>
 
-{% if messages %}
+{% if messages|length > 0 %}
     <ul>
         {% for message in messages %}
             <li>{{ message }}</li>
         {% endfor %}
     </ul>
 {% endif %}
-
+<div class="container mt-3">
+    <div id="messagesContainer" class="alert alert-dismissible fade show" role="alert">
+        <!-- Los mensajes se insertarán aquí dinámicamente -->
+    </div>
+</div>
 <!-- ... Tu código HTML anterior ... -->
 
 <script>
@@ -29,10 +33,10 @@
             }
             return params;
         }
-
+    
         // Obtén los parámetros de la URL
         var params = getURLParameters();
-
+    
         // Verifica si las variables están definidas antes de usarlas
         var claseId = params.claseId || '';
         var cupos = params.cupos || '';
@@ -40,10 +44,10 @@
         var horaInicio = params.horaInicio || '';
         var horaFin = params.horaFin || '';
         var precioSeleccionado = params.precioSeleccionado || '';
-
+    
         // Crea un contenedor para mostrar la información
         var claseInfoContainer = document.getElementById('claseInfoContainer');
-
+    
         // Muestra la información en el contenedor
         claseInfoContainer.innerHTML = `
             <div class="card" style="width: 18rem; margin: 30px;">
@@ -56,7 +60,7 @@
                 <!-- Agrega un formulario de pago aquí si es necesario -->
             </div>
         `;
-
+    
         // Agrega un event listener al botón de pago
         var procederAlPagoBtn = document.getElementById('procederAlPago');
         procederAlPagoBtn.addEventListener('click', function () {
@@ -66,7 +70,7 @@
                 precio_seleccionado: precioSeleccionado,
                 cupos_disponibles: cupos
             };
-
+    
             // Realizar la solicitud AJAX para procesar el pago
             fetch('/realizar_pago/', {
                 method: 'POST',
@@ -76,12 +80,42 @@
                 },
                 body: JSON.stringify(data),
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.mensaje);
-                // Puedes mostrar mensajes al usuario, redirigirlo, etc.
+            .then(response => {
+                console.log('Respuesta JSON:', response);
+                return response.json();
             })
-            .catch(error => console.error('Error:', error));
+            .then(data => {
+                console.log('Datos recibidos:', data);
+            
+                // Verifica si messages está definido
+                var messagesContainer = document.getElementById('messagesContainer');
+                var messages = data.messages || [];
+            
+                // Muestra los mensajes en el contenedor con estilos de Bootstrap
+                if (messages.length > 0) {
+                    var messagesList = '<ul>';
+                    messages.forEach(function (message) {
+                        messagesList += '<li>' + message + '</li>';
+                    });
+                    messagesList += '</ul>';
+                    messagesContainer.innerHTML = messagesList;
+            
+                    // Agrega clases de Bootstrap según el tipo de mensaje
+                    messagesContainer.classList.remove('alert-success');  // Elimina la clase de éxito si estaba presente
+                    messagesContainer.classList.add('alert-danger');  // Agrega la clase de error
+                    messagesContainer.classList.remove('d-none');  // Muestra el contenedor si estaba oculto
+                } else {
+                    // Oculta el contenedor si no hay mensajes
+                    messagesContainer.innerHTML = '';  // Limpia el contenido del contenedor
+                    messagesContainer.classList.add('d-none');
+                }
+                
+                // Resto del código según tus necesidades
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+                // Puedes manejar el error de manera adecuada, mostrar mensajes al usuario, etc.
+            });
         });
     });
 </script>

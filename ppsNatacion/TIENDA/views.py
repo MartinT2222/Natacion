@@ -358,13 +358,16 @@ def pago_producto(request):
 
 
 
+from django.http import JsonResponse
+
 def realizar_pago(request):
     messages = []
+
     if request.method == 'POST':
         # Lógica de verificación del pago
         # ...
 
-        pago_aprobado = False  # Coloca aquí tu lógica para determinar si el pago fue aprobado
+        pago_aprobado = True  # Coloca aquí tu lógica para determinar si el pago fue aprobado
 
         if pago_aprobado:
             # Obtener los datos JSON de la solicitud
@@ -413,6 +416,7 @@ def realizar_pago(request):
             messages.append('Pago aprobado. Compras registradas correctamente.')
         else:
             messages.append('Pago desaprobado. No se realizaron compras.')
+
     # Si el método no es POST, puedes manejarlo según tus necesidades
     return JsonResponse({'messages': messages})
 
