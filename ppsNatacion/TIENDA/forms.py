@@ -1,5 +1,5 @@
 from django import forms
-from .models import ClaseNatacion
+from .models import ClaseNatacion, ComprasClase
 from datetime import datetime, timedelta
 
 class ClaseNatacionForm(forms.ModelForm):
@@ -41,3 +41,19 @@ class ClaseNatacionForm(forms.ModelForm):
         model = ClaseNatacion
         fields = ['nombre', 'hora_inicio', 'hora_fin', 'cupos_disponibles', 'precio', 'imagen']
         
+class CompraForm(forms.ModelForm):
+    class Meta:
+        model = ComprasClase
+        fields = ['clase_comprada', 'precio_clase', 'cupos_disponibles_pagos']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Obtén la lista de nombres de clases sin repeticiones
+        nombres_clases = ClaseNatacion.objects.values_list('nombre', flat=True).distinct()
+
+        # Crea una lista de tuplas para usar en el campo 'choices'
+        choices = [(nombre, nombre) for nombre in nombres_clases]
+
+        # Asigna las opciones al campo 'clase_comprada'
+        self.fields['clase_comprada'].widget = forms.Select(choices=choices)

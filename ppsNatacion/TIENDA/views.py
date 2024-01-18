@@ -18,6 +18,10 @@ from django.utils.translation import gettext as _
 from django.db import transaction
 from decimal import Decimal, InvalidOperation
 
+from .models import ComprasClase
+from .forms import CompraForm
+
+
 
 def home(request):
     translation.activate('es')
@@ -428,3 +432,40 @@ def ver_mas_usuario(request, usuario_id):
     compras = ComprasClase.objects.filter(usuario=usuario)
     inscripciones = InscripcionClase.objects.filter(usuario=usuario)
     return render(request, 'tienda/ver_mas_usuario.html', {'usuario': usuario, 'compras': compras, 'inscripciones': inscripciones})
+
+
+
+def AgregarAlumno(request):
+    template_name = 'tienda/agregar_alumno.html'
+
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario agregado correctamente')
+            return redirect('tienda:lista_alumnos')
+        else:
+            messages.error(request, 'Error en el formulario. Por favor, verifica los datos.')
+    else:
+        form = RegistroForm()
+
+    return render(request, template_name, {'form': form})
+
+def agregar_compra(request, usuario_id):
+    # Obtén el objeto usuario o devuelve un error 404 si no existe
+    usuario = get_object_or_404(CustomUser, pk=usuario_id)
+    
+    # Filtra las compras para el usuario actual
+    compras = ComprasClase.objects.filter(usuario=usuario)
+
+    if request.method == 'POST':
+        form = CompraForm(request.POST)
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.usuario = usuario
+            compra.save()
+            return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
+    else:
+        form = CompraForm(request.POST or None)
+    
+    return render(request, 'tienda/agregar_compra.html', {'form': form, 'usuario': usuario, 'compras': compras})

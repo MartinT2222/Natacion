@@ -24,6 +24,7 @@
             <li class="list-group-item">{{ compra.clase_comprada }} - Precio: {{ compra.precio_clase }} - Fecha: {{ compra.fecha_compra }}</li>
           {% endfor %}
         </ul>
+        <a href="{% url 'tienda:agregar_compra' usuario_id=usuario.id %}" class="btn btn-success">Agregar Compra</a>
       </div>
     </div>
 
