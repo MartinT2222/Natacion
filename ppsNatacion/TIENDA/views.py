@@ -483,6 +483,16 @@ def Inscripcion_alumno(request, usuario_id):
             inscripcion.usuario = usuario
             inscripcion.save()
             
+            # Disminuir cupos_disponibles de la clase
+            clase_seleccionada = inscripcion.clase_natacion
+            clase_seleccionada.cupos_disponibles -= 1
+            clase_seleccionada.save()
+
+            # Disminuir cupos_disponibles_pagos de la clase comprada
+            compra_clase_seleccionada = ComprasClase.objects.get(usuario=usuario, clase_comprada=clase_seleccionada.nombre)
+            compra_clase_seleccionada.cupos_disponibles_pagos -= 1
+            compra_clase_seleccionada.save()
+            
             return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
     else:
         inscripcion_form = InscripcionForm(usuario)
