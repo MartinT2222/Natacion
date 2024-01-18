@@ -1,0 +1,47 @@
+{% extends 'tienda/layout.html' %}
+{% load static %}
+
+{% block body %}
+  <div class="container">
+    <h2 class="titulo">Detalles del Alumno</h2>
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Nombre:</strong> {{ usuario.username }}</p>
+        <p><strong>Dirección:</strong> {{ usuario.direccion }}</p>
+        <p><strong>Teléfono:</strong> {{ usuario.telefono }}</p>
+        <p><strong>Sexo:</strong> {{ usuario.get_sexo_display }}</p>
+        <p><strong>Edad:</strong> {{ usuario.edad }}</p>
+        <p><strong>Alergias:</strong> {{ usuario.alergias }}</p>
+        <!-- Agrega más campos según tus necesidades -->
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="titulo">Compras</h2>
+        <ul class="list-group">
+          {% for compra in compras %}
+            <li class="list-group-item">{{ compra.clase_comprada }} - Precio: {{ compra.precio_clase }} - Fecha: {{ compra.fecha_compra }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="titulo">Inscripciones</h2>
+        <ul class="list-group">
+          {% for inscripcion in inscripciones %}
+            <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Inscripción: {{ inscripcion.fecha_inscripcion }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <a href="{% url 'tienda:lista_alumnos' %}" class="btn btn-primary btn-volver">Volver a la lista</a>
+      </div>
+    </div>
+  </div>
+{% endblock body %}

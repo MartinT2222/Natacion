@@ -9,10 +9,9 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>SPARTA CLUB DE NATACION</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-
+    
     <script src="{% static 'js/particles.min.js' %}"></script>
-
-    <!-- Cargar jQuery desde la carpeta local -->
+    
     <script src="{% static 'node_modules/jquery/dist/jquery.min.js' %}"></script>
 
     <!-- Cargar Bootstrap desde la carpeta local -->
@@ -125,7 +124,7 @@
     
      {% block carrusel %}
 
-        {% endblock carrusel %}
+    {% endblock carrusel %}
 
     <div class="container">
 
@@ -140,10 +139,31 @@
         {% block content %}
         {% endblock content %}
     </div>
+
+
+    {% block galeria %}
+
+    {% endblock galeria %}
+
+
+
+
+
+
     <footer class="footer mt-auto py-3">
-        
+        <div class="contacto">
+            <p>Email: info@tudominio.com</p>
+            <p>Teléfono: (123) 456-7890</p>
+            <p>Dirección: Calle Principal #123, Ciudad</p>
+         </div>
+         
+         <div class="redes-sociales">
+            <a href="https://facebook.com/tudominio" target="_blank"><i class="fab fa-facebook">facebook</i></a>
+            <a href="https://twitter.com/tudominio" target="_blank"><i class="fab fa-twitter"></i>twitter</a>
+            <a href="https://instagram.com/tudominio" target="_blank"><i class="fab fa-instagram"></i>instagram</a>
+         </div>
         <div  style="color: #DDA337;">
-            © 2023 SPARTA CLUB DE NATACION S.A
+            © 2024 SPARTA CLUB DE NATACION S.A
             <a href="mailto: martinalejandrotorres77@gmail.com" style="color: #D5A877;">GRUPO: MateCoders.UTN</a>
         </div>
         

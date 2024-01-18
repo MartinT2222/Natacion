@@ -18,4 +18,6 @@ urlpatterns = [
     path('cancelar_turno/<int:turno_id>/', views.cancelar_turno, name='cancelar_turno'),
     path('ver-turnos/', views.ver_turnos, name='ver_turnos'),
     path('pago_producto/', views.pago_producto, name='pago_producto'),
+    path('ver_mas_usuario/<int:usuario_id>/', views.ver_mas_usuario, name='ver_mas_usuario'),
+    path('realizar_pago/', views.realizar_pago, name='realizar_pago'),
 ]

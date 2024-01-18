@@ -6,55 +6,90 @@
 
 <h2>Detalle del Pago</h2>
 
-{% for claseInfo in clases_info %}
-<div class="card" style="width: 18rem; margin: 30px;">
-    <!-- Agrega la información de cada clase -->
-    <h5 class="card-title">{{ claseInfo.claseNombre }}</h5>
-    <p class="card-text">Cupos Disponibles: {{ claseInfo.cuposDisponibles }}</p>
-    <p class="card-text">Días: {{ claseInfo.dias }}</p>
-    <p class="card-text">Hora: {{ claseInfo.horaInicio }} - {{ claseInfo.horaFin }}</p>
-    <!-- Agrega más detalles según tus necesidades -->
-    <p style="color: red;">Precio: {{ claseInfo.precio }}</p>
-    <!-- Agrega un formulario de pago aquí si es necesario -->
-</div>
-{% endfor %}
+<div id="claseInfoContainer"></div>
 
-<!-- Agrega un botón o enlace para proceder al pago -->
-<button class="btn btn-primary" id="procederAlPago">Proceder al Pago</button>
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 
-  <script>
-    document.getElementById('procederAlPago').addEventListener('click', function() {
-        // Obtén la información de la clase seleccionada
-        var selectedClass = {
-            claseNombre: "{{ clases_info.0.claseNombre }}",
-            cuposDisponibles: "{{ clases_info.0.cuposDisponibles }}",
-            dias: "{{ clases_info.0.dias }}",
-            horaInicio: "{{ clases_info.0.horaInicio }}",
-            horaFin: "{{ clases_info.0.horaFin }}",
-            precio: "{{ clases_info.0.precio }}"
-        };
+<!-- ... Tu código HTML anterior ... -->
 
-        // Envia la información al servidor mediante una petición AJAX
-        fetch('/pago_producto/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({ claseInfo: selectedClass })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Maneja la respuesta del servidor
-            alert(data.message);  // Puedes personalizar esto según tu lógica
-            if (data.success) {
-                // Redirige o realiza otras acciones después de un pago exitoso
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Función para obtener los parámetros de la URL
+        function getURLParameters() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var params = {};
+            for (const [key, value] of urlParams) {
+                params[key] = value;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+            return params;
+        }
+
+        // Obtén los parámetros de la URL
+        var params = getURLParameters();
+
+        // Verifica si las variables están definidas antes de usarlas
+        var claseId = params.claseId || '';
+        var cupos = params.cupos || '';
+        var dias = params.dias || '';
+        var horaInicio = params.horaInicio || '';
+        var horaFin = params.horaFin || '';
+        var precioSeleccionado = params.precioSeleccionado || '';
+
+        // Crea un contenedor para mostrar la información
+        var claseInfoContainer = document.getElementById('claseInfoContainer');
+
+        // Muestra la información en el contenedor
+        claseInfoContainer.innerHTML = `
+            <div class="card" style="width: 18rem; margin: 30px;">
+                <h5 class="card-title">${claseId}</h5>
+                <p class="card-text">Cupos Disponibles: ${cupos}</p>
+                <p class="card-text">Días: ${dias}</p>
+                <p class="card-text">Hora: ${horaInicio} - ${horaFin}</p>
+                <!-- Agrega más detalles según tus necesidades -->
+                <p style="color: red;">Precio: ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(precioSeleccionado))}</p>
+                <!-- Agrega un formulario de pago aquí si es necesario -->
+            </div>
+        `;
+
+        // Agrega un event listener al botón de pago
+        var procederAlPagoBtn = document.getElementById('procederAlPago');
+        procederAlPagoBtn.addEventListener('click', function () {
+            // Utiliza las variables definidas anteriormente
+            var data = {
+                clase_id: claseId,
+                precio_seleccionado: precioSeleccionado,
+                cupos_disponibles: cupos
+            };
+
+            // Realizar la solicitud AJAX para procesar el pago
+            fetch('/realizar_pago/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.mensaje);
+                // Puedes mostrar mensajes al usuario, redirigirlo, etc.
+            })
+            .catch(error => console.error('Error:', error));
         });
     });
-  </script>
+</script>
+
+<!-- ... El resto de tu código HTML ... -->
+
+
+<!-- Agrega un botón o enlace para proceder al pago -->
+<button class="btn btn-primary" id="procederAlPago">Pagar</button>
 
 {% endblock %}

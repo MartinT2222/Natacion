@@ -16,7 +16,7 @@ from django.db import IntegrityError
 from django.db.models import F
 from django.utils.translation import gettext as _
 from django.db import transaction
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 
 def home(request):
@@ -195,15 +195,17 @@ def get_horarios_clase(request):
         ultimo_dia_mes_siguiente = primer_dia_mes_siguiente.replace(day=monthrange(primer_dia_mes_siguiente.year, primer_dia_mes_siguiente.month)[1])
         ultimo_dia_mes_siguiente = primer_dia_mes_siguiente + timedelta(days=34)
         
-        eventos_mes_actual = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas)
-        eventos_mes_siguiente = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_siguiente, ultimo_dia_mes_siguiente], nombre__in=clases_compradas)
+        eventos_mes_actual = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas, cupos_disponibles__gt=0)
+        eventos_mes_siguiente = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_siguiente, ultimo_dia_mes_siguiente], nombre__in=clases_compradas, cupos_disponibles__gt=0)
         
         # Combinamos los eventos del mes actual y del mes siguiente
         eventos = list(eventos_mes_actual) + list(eventos_mes_siguiente)
     else:
         # Si no estamos en la última semana o no es el día 25, obtenemos solo los eventos del mes actual
-        eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas)
-
+        eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas, cupos_disponibles__gt=0)
+    
+    print(f"eventos: {eventos}")
+    
     eventos_json = [{
         'id': evento.id,
         'title': evento.nombre,
@@ -212,6 +214,7 @@ def get_horarios_clase(request):
     } for evento in eventos]
 
     return JsonResponse(eventos_json, safe=False)
+
 
 
 
@@ -325,61 +328,99 @@ def calcular_precio(nombre_clase, numero_clases):
     # Retorna -1 o algún valor por defecto si el nombre de la clase no está en el diccionario
     return -1
 
-from django.views.decorators.csrf import csrf_exempt  # Importa el decorador csrf_exempt
-from urllib.parse import unquote
+
+
+
+
 
 def pago_producto(request):
-    clases_info_str = request.GET.get('clasesInfo')
-    # Lista para almacenar mensajes de respuesta
+    if request.method == 'GET':
+        # Obtener parámetros de la URL
+        clase_id = request.GET.get('claseId')
+        precio_seleccionado = request.GET.get('precioSeleccionado')
+        dias = request.GET.get('dias')
+        hora_inicio = request.GET.get('horaInicio')
+        hora_fin = request.GET.get('horaFin')
+        cupos_disponibles = request.GET.get('cupos')
+
+        return render(request, 'tienda/pago_producto.html', {
+            'clase_id': clase_id,
+            'precio_seleccionado': precio_seleccionado,
+            'dias': dias,
+            'hora_inicio': hora_inicio,
+            'hora_fin': hora_fin,
+            'cupos_disponibles': cupos_disponibles,
+        })
+    else:
+        # Manejar otras solicitudes según sea necesario
+        return redirect('tienda:home')  # Redirigir a la página principal, por ejemplo
+
+
+
+
+def realizar_pago(request):
     messages = []
-    if clases_info_str:
-        clases_info = json.loads(clases_info_str)
-        usuario_actual = request.user
+    if request.method == 'POST':
+        # Lógica de verificación del pago
+        # ...
 
-        # Verificar si el pago fue aprobado (puedes adaptar esto según tus necesidades)
-        pago_aprobado = False    # Coloca aquí tu lógica para determinar si el pago fue aprobado
+        pago_aprobado = False  # Coloca aquí tu lógica para determinar si el pago fue aprobado
+
         if pago_aprobado:
-            # Actualizar el valor de cupos_disponibles_pagos o crear una nueva compra
-            for claseInfo in clases_info:
-                clase_nombre = claseInfo['claseNombre']
-                precio_clase = float(claseInfo['precio'].replace(',', '.'))
-                cupos_disponibles = claseInfo['cuposDisponibles']
-                
-                # Verificar si ya existe una compra para esta clase
-                compra_existente = ComprasClase.objects.filter(
-                    usuario=usuario_actual,
-                    clase_comprada=clase_nombre
-                ).first()
+            # Obtener los datos JSON de la solicitud
+            data = json.loads(request.body.decode('utf-8'))
 
-                if compra_existente:
-                    # Si existe, actualizar la compra existente
-                    compra_existente.precio_clase += Decimal(str(precio_clase))
-                    compra_existente.cupos_disponibles_pagos += cupos_disponibles
-                    compra_existente.save()
-                else:
-                    # Si no existe, crear una nueva compra
-                    compra_clase = ComprasClase.objects.create(
-                        usuario=usuario_actual,
-                        clase_comprada=clase_nombre,
-                        precio_clase=precio_clase,
-                        cupos_disponibles_pagos=cupos_disponibles,
-                        fecha_compra=timezone.now()  # Asigna la fecha actual
-                    )
-                    compra_clase.save()
+            # Crear instancia de ComprasClase
+            usuario = request.user  # Obtener el usuario actual
+            clase_id = data.get('clase_id')
+            precio_seleccionado = data.get('precio_seleccionado')
+            cupos_disponibles = data.get('cupos_disponibles')
+            # Reemplazar la coma con un punto en el precio seleccionado
+            precio_seleccionado = precio_seleccionado.replace(',', '.')
+
+            try:
+                precio_seleccionado_decimal = Decimal(str(precio_seleccionado))
+            except InvalidOperation as e:
+                print(f"Error al convertir precio_seleccionado a Decimal: {e}")
+                precio_seleccionado_decimal = Decimal('0.00')
+
+            print(f"usuario: {usuario}")
+            print(f"clase_id: {clase_id}")
+            print(f"precio_seleccionado: {precio_seleccionado}")
+            print(f"cupos_disponibles: {cupos_disponibles}")
+
+            compra_existente = ComprasClase.objects.filter(
+                usuario=usuario,
+                clase_comprada=clase_id
+            ).first()
+
+            if compra_existente:
+                # Si existe, actualizar la compra existente
+                compra_existente.precio_clase += precio_seleccionado_decimal
+                compra_existente.cupos_disponibles_pagos += int(cupos_disponibles)
+                compra_existente.save()
+            else:
+                # Si no existe, crear una nueva compra
+                compra_clase = ComprasClase.objects.create(
+                    usuario=usuario,
+                    clase_comprada=clase_id,
+                    precio_clase=precio_seleccionado_decimal,
+                    cupos_disponibles_pagos=int(cupos_disponibles),
+                    fecha_compra=timezone.now()
+                )
+                compra_clase.save()
 
             messages.append('Pago aprobado. Compras registradas correctamente.')
         else:
             messages.append('Pago desaprobado. No se realizaron compras.')
-            # Lógica para manejar un pago no aprobado
-            
-            # Por ejemplo, renderizar una página de error
-            messages.append(f'pago desaprobado ')
-    else:
-        clases_info = []
-    # Realiza cualquier lógica adicional relacionada con el pago si es necesario
-    # Obtener el usuario actual
-    context = {
-        'clases_info': clases_info,
-        'messages': messages,
-    }
-    return render(request, 'tienda/pago_producto.html', context)
+    # Si el método no es POST, puedes manejarlo según tus necesidades
+    return JsonResponse({'messages': messages})
+
+
+
+
+def ver_mas_usuario(request, usuario_id):
+    usuario = get_object_or_404(CustomUser, pk=usuario_id)
+    compras = ComprasClase.objects.filter(usuario=usuario)
+    inscripciones = InscripcionClase.objects.filter(usuario=usuario)
+    return render(request, 'tienda/ver_mas_usuario.html', {'usuario': usuario, 'compras': compras, 'inscripciones': inscripciones})

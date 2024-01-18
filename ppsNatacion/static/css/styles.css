@@ -31,7 +31,10 @@ body, html {
     background-color: #F0F9FF;
     
 }
-
+.redes-sociales{
+    position: relative;
+    z-index: 2;
+}
 
 .container {
     flex: 1;
@@ -209,3 +212,17 @@ body, html {
     color: #ffffff; /* Color del texto dentro del contenedor de información */
     margin-top: 1rem;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

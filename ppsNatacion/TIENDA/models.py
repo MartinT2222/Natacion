@@ -1,6 +1,7 @@
 from django.db import models
 from USUARIOS.models import CustomUser
 
+
 class ClaseNatacion(models.Model):
     nombre = models.CharField(max_length=100)
     fecha = models.DateField()
@@ -48,6 +49,14 @@ class ComprasClase(models.Model):
     def __str__(self):
         return f'{self.usuario.username} - {self.clase_comprada}'
 
+    @classmethod
+    def crear_compra(cls, usuario, clase_comprada, precio_clase, cupos_disponibles_pagos):
+        return cls.objects.create(
+            usuario=usuario,
+            clase_comprada=clase_comprada,
+            precio_clase=precio_clase,
+            cupos_disponibles_pagos=cupos_disponibles_pagos
+        )
 
 
 
