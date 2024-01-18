@@ -30,12 +30,13 @@
 
     <div class="row">
       <div class="col-md-12">
-        <h2 class="titulo">Inscripciones</h2>
+        <h2 class="titulo">Turnos</h2>
         <ul class="list-group">
           {% for inscripcion in inscripciones %}
-            <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Inscripción: {{ inscripcion.fecha_inscripcion }}</li>
+            <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Turnos: {{ inscripcion.clase_natacion.fecha }}</li>
           {% endfor %}
         </ul>
+        <a href="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" class="btn btn-success">Inscribir Alumno</a>
       </div>
     </div>
 

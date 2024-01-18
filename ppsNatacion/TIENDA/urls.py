@@ -22,4 +22,5 @@ urlpatterns = [
     path('realizar_pago/', views.realizar_pago, name='realizar_pago'),
     path('agregar_alumno/', views.AgregarAlumno, name='agregar_alumno'),
     path('agregar_compra/<int:usuario_id>/', views.agregar_compra, name='agregar_compra'),
+    path('inscribir_alumno/<int:usuario_id>/', views.Inscripcion_alumno, name='Inscripcion_alumno'),
 ]

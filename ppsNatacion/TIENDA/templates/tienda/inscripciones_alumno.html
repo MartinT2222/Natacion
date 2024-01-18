@@ -1,0 +1,21 @@
+{% extends 'tienda/layout.html' %}
+{% load static %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+      <h2 class="titulo">Inscripciones</h2>
+      <ul class="list-group">
+        {% for inscripcion in inscripciones %}
+          <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Inscripción: {{ inscripcion.fecha_inscripcion }}</li>
+        {% endfor %}
+      </ul>
+      <form method="post" action="{% url 'tienda:Inscripcion_alumno' usuario.id %}">
+        {% csrf_token %}
+        {{ inscripcion_form.as_p }}
+        <button type="submit" class="btn btn-success">Inscribir</button>
+      </form>
+    </div>
+</div>
+<a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver">Volver a los detalles del alumno</a>
+{% endblock body %}

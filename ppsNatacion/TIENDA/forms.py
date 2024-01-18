@@ -1,6 +1,7 @@
 from django import forms
-from .models import ClaseNatacion, ComprasClase
+from .models import ClaseNatacion, ComprasClase, InscripcionClase
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 class ClaseNatacionForm(forms.ModelForm):
     DIAS_SEMANA_CHOICES = (
@@ -57,3 +58,33 @@ class CompraForm(forms.ModelForm):
 
         # Asigna las opciones al campo 'clase_comprada'
         self.fields['clase_comprada'].widget = forms.Select(choices=choices)
+        
+        
+        
+class InscripcionForm(forms.ModelForm):
+    class Meta:
+        model = InscripcionClase
+        fields = ['clase_natacion']
+        
+    def __init__(self, usuario, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Calcula la fecha actual
+        fecha_actual = datetime.now()
+
+        # Calcula la fecha hasta la que quieres mostrar clases (60 días en este caso)
+        fecha_limite = fecha_actual + timedelta(days=60)
+
+        # Obtén la lista de clases disponibles filtradas por usuario, cupos_disponibles y fechas
+        clases_disponibles = ClaseNatacion.objects.filter(
+            fecha__gte=fecha_actual,  # Filtra clases con fechas mayores o iguales a la actual
+            fecha__lte=fecha_limite,  # Filtra clases con fechas menores o iguales a la fecha límite (60 días en el futuro)
+            nombre__in=ComprasClase.objects.filter(usuario=usuario).values('clase_comprada').distinct(),  # Filtra clases compradas por el usuario
+            cupos_disponibles__gt=0  # Filtra clases con cupos_disponibles mayores a 0
+        )
+
+        # Crea una lista de tuplas para usar en el campo 'choices'
+        choices = [(clase.id, f"{clase.nombre} - {clase.fecha.strftime('%d/%m/%Y')} - {clase.hora_inicio.strftime('%H:%M')} - {clase.hora_fin.strftime('%H:%M')}") for clase in clases_disponibles]
+
+        # Asigna las opciones al campo 'clase_natacion'
+        self.fields['clase_natacion'].choices = choices

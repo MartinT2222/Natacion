@@ -12,7 +12,7 @@ class ClaseNatacion(models.Model):
     imagen = models.ImageField(upload_to='clase_imagenes/', null=True, blank=True)  # Campo de imagen
 
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} - {self.fecha.strftime('%d/%m/%Y')}"
     
     
 class InscripcionClase(models.Model):

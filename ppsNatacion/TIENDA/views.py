@@ -5,7 +5,7 @@ from django.db.models.query_utils import Q
 from django.http import JsonResponse, HttpResponseServerError
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
-from .forms import ClaseNatacionForm  # Importa el formulario de clase de natación
+from .forms import ClaseNatacionForm, CompraForm, InscripcionForm  # Importa el formulario de clase de natación
 from .models import ClaseNatacion, InscripcionClase, ComprasClase
 from datetime import datetime, timedelta
 from django.contrib import messages
@@ -18,8 +18,8 @@ from django.utils.translation import gettext as _
 from django.db import transaction
 from decimal import Decimal, InvalidOperation
 
-from .models import ComprasClase
-from .forms import CompraForm
+
+
 
 
 
@@ -469,3 +469,22 @@ def agregar_compra(request, usuario_id):
         form = CompraForm(request.POST or None)
     
     return render(request, 'tienda/agregar_compra.html', {'form': form, 'usuario': usuario, 'compras': compras})
+
+
+def Inscripcion_alumno(request, usuario_id):
+    usuario = get_object_or_404(CustomUser, pk=usuario_id)
+
+    if request.method == 'POST':
+        inscripcion_form = InscripcionForm(usuario, request.POST)
+        
+        if inscripcion_form.is_valid():
+            
+            inscripcion = inscripcion_form.save(commit=False)
+            inscripcion.usuario = usuario
+            inscripcion.save()
+            
+            return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
+    else:
+        inscripcion_form = InscripcionForm(usuario)
+
+    return render(request, 'tienda/inscripciones_alumno.html', {'usuario': usuario, 'inscripcion_form': inscripcion_form})
