@@ -24,7 +24,7 @@
             <li class="list-group-item">{{ compra.clase_comprada }} - Precio: {{ compra.precio_clase }} - Fecha: {{ compra.fecha_compra }}</li>
           {% endfor %}
         </ul>
-        <a href="{% url 'tienda:agregar_compra' usuario_id=usuario.id %}" class="btn btn-success">Agregar Compra</a>
+        <a href="{% url 'tienda:agregar_compra' usuario_id=usuario.id %}" class="btn btn-success btn-enviar">Agregar Compra</a>
       </div>
     </div>
 
@@ -36,13 +36,13 @@
             <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Turnos: {{ inscripcion.clase_natacion.fecha }}</li>
           {% endfor %}
         </ul>
-        <a href="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" class="btn btn-success">Inscribir Alumno</a>
+        <a href="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" class="btn btn-success btn-enviar">Inscribir Alumno</a>
       </div>
     </div>
-
+    
     <div class="row">
-      <div class="col-md-12">
-        <a href="{% url 'tienda:lista_alumnos' %}" class="btn btn-primary btn-volver">Volver a la lista</a>
+      <div class="col-md-12 text-center">
+        <a href="{% url 'tienda:lista_alumnos' %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i></a>
       </div>
     </div>
   </div>

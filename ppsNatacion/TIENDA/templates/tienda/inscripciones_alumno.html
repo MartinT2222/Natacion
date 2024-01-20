@@ -13,9 +13,10 @@
       <form method="post" action="{% url 'tienda:Inscripcion_alumno' usuario.id %}">
         {% csrf_token %}
         {{ inscripcion_form.as_p }}
-        <button type="submit" class="btn btn-success">Inscribir</button>
+        <hr>
+        <button type="submit" class="btn btn-success btn-enviar">Inscribir</button>
       </form>
     </div>
 </div>
-<a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver">Volver a los detalles del alumno</a>
+<a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i></a>
 {% endblock body %}

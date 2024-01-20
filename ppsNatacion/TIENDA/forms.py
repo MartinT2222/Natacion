@@ -60,7 +60,6 @@ class CompraForm(forms.ModelForm):
         self.fields['clase_comprada'].widget = forms.Select(choices=choices)
         
         
-        
 class InscripcionForm(forms.ModelForm):
     class Meta:
         model = InscripcionClase

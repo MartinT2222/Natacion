@@ -5,11 +5,26 @@
   <div class="container">
     <h2 class="titulo">Agregar Nueva Compra</h2>
     <form method="post" action="{% url 'tienda:agregar_compra' usuario.id %}">
-        {% csrf_token %}
-        {{ form.as_p }}
+      {% csrf_token %}
+      <div class="form-group">
+        {{ form.clase_comprada.label_tag }}
+        {{ form.clase_comprada }}
+      </div>
+      <hr>
+      <div class="form-group">
+        {{ form.precio_clase.label_tag }}
+        {{ form.precio_clase }}
+      </div>
+      <hr>
+      <div class="form-group">
+        {{ form.cupos_disponibles_pagos.label_tag }}
+        {{ form.cupos_disponibles_pagos }}
+      </div>
+      <hr>
         
-        <button type="submit" class="btn btn-success">Guardar Compra</button>
-      </form>
-    <a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver">Volver a los detalles del alumno</a>
+      <button type="submit" class="btn btn-success btn-enviar">Guardar Compra</button>
+
+    </form>
+    <a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i> </a>
   </div>
 {% endblock body %}

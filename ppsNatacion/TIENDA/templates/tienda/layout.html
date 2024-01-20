@@ -39,6 +39,7 @@
     <script type="module" src="{% static 'fullcalendar/core/locales/es.global.js' %}"></script>
     
 <!-- Otros archivos necesarios de FullCalendar -->
+    <link rel="stylesheet" href="{% static 'font-awesome-4.7.0/css/font-awesome.min.css'%}">
 
 </head>
 
@@ -48,10 +49,7 @@
         
         <div class="container-fluid" >
             <a class="navbar-brand" href="{% url 'tienda:home' %}" style=""><img src="{% static 'media/img/logoblanco.png' %}" alt="Logo de la tienda" width="50" height="50">SPARTA CLUB DE NATACION</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"     
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-    
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar"
                 aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -68,12 +66,16 @@
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'tienda:home' %}">Inicio</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Acerca de</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="mailto: contacto@SPARTACLUBNATACION.com">Contacto</a>
-                        </li>
+                        {% if user.is_authenticated %}
+                            {% if not user.is_staff %} {# Verificar si el usuario no es administrador #}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Acerca de</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="mailto: contacto@SPARTACLUBNATACION.com">Contacto</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
                         {% if perms.TIENDA.lista_alumnos %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'tienda:lista_alumnos' %}" style="color: #ffffff;">Lista alumnos</a>
@@ -84,9 +86,13 @@
                             <a class="nav-link" href="{% url 'tienda:agregar_clase' %}" style="color: #ffffff;">Agregar Clases</a>
                         </li>
                         {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'tienda:asociar_usuario_clases' %}" style="color: #ffffff;">Calendario de Clases</a>
-                        </li>
+                        {% if user.is_authenticated %}
+                            {% if not user.is_staff %} {# Verificar si el usuario no es administrador #}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'tienda:asociar_usuario_clases' %}" style="color: #ffffff;">Calendario de Clases</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'tienda:ver_turnos' %}" style="color: #ffffff;">Ver Turnos</a>
                         </li>
@@ -158,9 +164,9 @@
          </div>
          
          <div class="redes-sociales">
-            <a href="https://facebook.com/tudominio" target="_blank"><i class="fab fa-facebook">facebook</i></a>
-            <a href="https://twitter.com/tudominio" target="_blank"><i class="fab fa-twitter"></i>twitter</a>
-            <a href="https://instagram.com/tudominio" target="_blank"><i class="fab fa-instagram"></i>instagram</a>
+            <a href="https://facebook.com/tudominio" target="_blank"><i class="fa fa-facebook-square" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/tudominio" target="_blank"><i class="fa fa-twitter-square" aria-hidden="true"></i></a>
+            <a href="https://instagram.com/tudominio" target="_blank"><i class="fa fa-instagram" aria-hidden="true"></i></a>
          </div>
         <div  style="color: #DDA337;">
             © 2024 SPARTA CLUB DE NATACION S.A

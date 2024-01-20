@@ -56,7 +56,7 @@ def home(request):
             if dias[0] not in clases_unicas[nombre]['dias']:
                 clases_unicas[nombre]['dias'].append(dias[0])
     
-    print(f"cupos: {cupos_disponibles_pagos}")
+    
     context = {
         'clases': clases_unicas.values(),
     }
@@ -79,18 +79,23 @@ def buscar(request):
 @permission_required('TIENDA.lista_alumnos')
 def lista_alumnos(request):
     usuarios = CustomUser.objects.filter(is_superuser=False)
+
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if 'eliminar' in request.POST:
-            usuario_id = request.POST.get('alumno_id')  # Corregir obtención del ID del usuario a eliminar
+            usuario_id = request.POST.get('alumno_id')
             usuario_eliminar = CustomUser.objects.get(pk=usuario_id)
             usuario_eliminar.delete()
             return redirect('tienda:lista_alumnos')
-
     else:
         form = RegistroForm()
 
+    for usuario in usuarios:
+        usuario.compras = ComprasClase.objects.filter(usuario=usuario)
+        #usuario.incripciones = InscripcionClase.objects.filter(usuario=usuario)
+
     return render(request, 'tienda/lista_alumnos.html', {'usuarios': usuarios, 'form': form})
+
 
 
 
