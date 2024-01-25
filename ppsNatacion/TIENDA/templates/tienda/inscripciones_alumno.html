@@ -10,13 +10,51 @@
           <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Inscripción: {{ inscripcion.fecha_inscripcion }}</li>
         {% endfor %}
       </ul>
-      <form method="post" action="{% url 'tienda:Inscripcion_alumno' usuario.id %}">
+      <form method="post" action="{% url 'tienda:Inscripcion_alumno' usuario.id %}" id="inscripcion-form">
         {% csrf_token %}
         {{ inscripcion_form.as_p }}
         <hr>
         <button type="submit" class="btn btn-success btn-enviar">Inscribir</button>
       </form>
+      <!-- En tu template HTML -->
+      <div id="alerta-mensaje" class="alert alert-danger" style="display: none;" role="alert"></div>
     </div>
 </div>
 <a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i></a>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('inscripcion-form');
+      const alertaMensaje = document.getElementById('alerta-mensaje');
+
+      form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Inscripción exitosa
+          alertaMensaje.innerText = result.message;
+          alertaMensaje.className = 'alert alert-success';
+        } else {
+          // Error en la inscripción
+          alertaMensaje.innerText = result.message;
+          alertaMensaje.className = 'alert alert-danger';
+        }
+
+        alertaMensaje.style.display = 'block';
+      });
+    });
+  </script>
+
 {% endblock body %}

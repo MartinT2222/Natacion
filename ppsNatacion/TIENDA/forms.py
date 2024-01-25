@@ -2,6 +2,8 @@ from django import forms
 from .models import ClaseNatacion, ComprasClase, InscripcionClase
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db.models import Q
+
 
 class ClaseNatacionForm(forms.ModelForm):
     DIAS_SEMANA_CHOICES = (

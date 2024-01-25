@@ -213,7 +213,7 @@ def get_horarios_clase(request):
         # Si no estamos en la última semana o no es el día 25, obtenemos solo los eventos del mes actual
         eventos = ClaseNatacion.objects.filter(fecha__range=[primer_dia_mes_actual, ultimo_dia_mes_actual], nombre__in=clases_compradas, cupos_disponibles__gt=0)
     
-    print(f"eventos: {eventos}")
+    #print(f"eventos: {eventos}")
     
     eventos_json = [{
         'id': evento.id,
@@ -299,23 +299,50 @@ def ver_turnos(request):
     return render(request, 'tienda/ver_turnos.html', {'turnos': turnos})
 
 
+from django.contrib.auth.decorators import user_passes_test
+
+def is_admin_or_user(user):
+    return user.is_authenticated and (user.is_superuser or user.is_staff)
+
+@user_passes_test(is_admin_or_user)
 @require_POST
 @login_required
 def cancelar_turno(request, turno_id):
-    turno = get_object_or_404(InscripcionClase, pk=turno_id, usuario=request.user)
-
     try:
-        clase_natacion = turno.clase_natacion
-        clase_natacion.cupos_disponibles += 1
-        clase_natacion.save()
+        with transaction.atomic():
+            turno = get_object_or_404(InscripcionClase, pk=turno_id)
+            print(f"Turno a cancelar: {turno.id} - Usuario: {turno.usuario.username}")
 
-        turno.delete()
-        return JsonResponse({'message': 'Turno cancelado exitosamente'})
+
+
+            clase_natacion = turno.clase_natacion
+            clase_natacion.cupos_disponibles += 1
+            clase_natacion.save()
+
+            # Buscar el registro existente en ComprasClase y actualizar cupos_disponibles_pagos
+            compra_clase = ComprasClase.objects.filter(
+                usuario=turno.usuario,
+                clase_comprada=turno.clase_natacion.nombre,  # Ajusta según la estructura de tu modelo
+            ).first()
+
+            if compra_clase:
+                compra_clase.cupos_disponibles_pagos += 1
+                compra_clase.save()
+                
+            #print(f"Clase de Natación: {clase_natacion}")
+
+            #print(f"compra_clase: {compra_clase} - ")
+            turno.delete()
+            print("Turno cancelado exitosamente")
+
+            return JsonResponse({'message': 'Turno cancelado exitosamente'})
     except Exception as e:
+        print(f"Error al cancelar el turno: {e}")
         return JsonResponse({'error': 'Error al cancelar el turno'}, status=500)
     
-from django.utils.translation import gettext as _
-
+    
+    
+    
 
 def calcular_precio(nombre_clase, numero_clases):
     # Define un diccionario que mapea los nombres de las clases a sus precios respectivos
@@ -457,48 +484,89 @@ def AgregarAlumno(request):
     return render(request, template_name, {'form': form})
 
 def agregar_compra(request, usuario_id):
-    # Obtén el objeto usuario o devuelve un error 404 si no existe
     usuario = get_object_or_404(CustomUser, pk=usuario_id)
-    
-    # Filtra las compras para el usuario actual
     compras = ComprasClase.objects.filter(usuario=usuario)
 
     if request.method == 'POST':
         form = CompraForm(request.POST)
+        
         if form.is_valid():
-            compra = form.save(commit=False)
-            compra.usuario = usuario
-            compra.save()
+            nombre_clase = form.cleaned_data['clase_comprada']
+            
+            # Verificar si hay una compra existente con el mismo nombre
+            compra_existente = ComprasClase.objects.filter(
+                usuario=usuario,
+                clase_comprada=nombre_clase  # Usar la variable nombre_clase aquí
+            ).first()
+
+            if compra_existente:
+                # Si existe, actualizar la compra existente
+                compra_existente.precio_clase = form.cleaned_data['precio_clase']
+                compra_existente.cupos_disponibles_pagos += form.cleaned_data['cupos_disponibles_pagos']
+                compra_existente.fecha_compra = timezone.now()
+                compra_existente.save()
+            else:
+                # Si no existe, crear una nueva compra
+                compra = form.save(commit=False)
+                compra.usuario = usuario
+                compra.save()
+
             return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
     else:
         form = CompraForm(request.POST or None)
-    
+
     return render(request, 'tienda/agregar_compra.html', {'form': form, 'usuario': usuario, 'compras': compras})
 
 
-def Inscripcion_alumno(request, usuario_id):
-    usuario = get_object_or_404(CustomUser, pk=usuario_id)
 
+from django.db.models import Q
+
+def Inscripcion_alumno(request, usuario_id):
+    print("Entrando en la vista Inscripcion_alumno")  # Agrega este mensaje de depuración
+    usuario = get_object_or_404(CustomUser, pk=usuario_id)
+    print(f"usuario: {usuario}")
+    
     if request.method == 'POST':
         inscripcion_form = InscripcionForm(usuario, request.POST)
         
         if inscripcion_form.is_valid():
-            
-            inscripcion = inscripcion_form.save(commit=False)
-            inscripcion.usuario = usuario
-            inscripcion.save()
-            
-            # Disminuir cupos_disponibles de la clase
-            clase_seleccionada = inscripcion.clase_natacion
-            clase_seleccionada.cupos_disponibles -= 1
-            clase_seleccionada.save()
+            # Verificar si el alumno tiene cupos_disponibles_pagos
+            compra_clase_seleccionada = ComprasClase.objects.get(usuario=usuario, clase_comprada=inscripcion_form.cleaned_data['clase_natacion'].nombre)
 
-            # Disminuir cupos_disponibles_pagos de la clase comprada
-            compra_clase_seleccionada = ComprasClase.objects.get(usuario=usuario, clase_comprada=clase_seleccionada.nombre)
-            compra_clase_seleccionada.cupos_disponibles_pagos -= 1
-            compra_clase_seleccionada.save()
+            # Agrega un mensaje de depuración
+            print(f"Cupos disponibles pagos: {compra_clase_seleccionada.cupos_disponibles_pagos}")
             
-            return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
+            if compra_clase_seleccionada.cupos_disponibles_pagos > 0:
+                # Verificar si ya hay una inscripción para el mismo día
+                existe_inscripcion_mismo_dia = InscripcionClase.objects.filter(
+                    usuario=usuario,
+                    clase_natacion__fecha=inscripcion_form.cleaned_data['clase_natacion'].fecha,
+                ).exists()
+
+                # Agrega mensajes de depuración
+                print(f"Existe inscripción para el mismo día: {existe_inscripcion_mismo_dia}")
+
+                if not existe_inscripcion_mismo_dia:
+                    # Realizar la inscripción
+                    inscripcion = inscripcion_form.save(commit=False)
+                    inscripcion.usuario = usuario
+                    inscripcion.save()
+
+                    # Disminuir cupos_disponibles de la clase
+                    clase_seleccionada = inscripcion.clase_natacion
+                    clase_seleccionada.cupos_disponibles -= 1
+                    clase_seleccionada.save()
+
+                    # Disminuir cupos_disponibles_pagos de la clase comprada
+                    compra_clase_seleccionada.cupos_disponibles_pagos -= 1
+                    compra_clase_seleccionada.save()
+
+                    return JsonResponse({'success': True, 'message': 'Inscripción exitosa'})
+                else:
+                    return JsonResponse({'success': False, 'message': 'Ya tienes una inscripción para esta clase en el mismo día.'})
+            else:
+                return JsonResponse({'success': False, 'message': 'No tienes cupos disponibles para realizar la inscripción.'})
+
     else:
         inscripcion_form = InscripcionForm(usuario)
 

@@ -44,6 +44,15 @@ body, html {
     z-index: 2;
 }
 
+
+.contenedor2 {
+    flex: 1;
+    margin-top: 80px;
+    margin-bottom: 50px;
+    position: relative;
+    z-index: 2;
+}
+
 /* Estilos para la barra de navegación */
 .navbar {
     background-color: #112A4A;
@@ -221,7 +230,68 @@ body, html {
 
 
 
+/* Estilos generales para la sección */
+.section-first {
+    padding: 80px 0; /* Ajusta el relleno superior e inferior según sea necesario */
+}
 
+/* Estilos para las imágenes en las columnas */
+.col-lg-6 img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px; /* Ajusta el radio de borde según sea necesario */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Agrega una sombra sutil */
+}
+
+/* Estilos para el contenido de la segunda columna */
+.box-width-lg-470 {
+    max-width: 470px;
+    margin: 0 auto;
+}
+
+
+/* Estilos para las pestañas */
+.nav-tabs {
+    border-bottom: 2px solid #007BFF; /* Cambia el color de la línea inferior según sea necesario */
+}
+
+.nav-link {
+    font-size: 16px;
+    color: #333; /* Cambia el color del texto según sea necesario */
+}
+
+.nav-link.active {
+    color: #007BFF; /* Cambia el color del texto activo según sea necesario */
+}
+
+
+
+/* Estilos para los botones */
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.button-secondary {
+    color: #fff;
+    background-color: #28a745; /* Cambia el color de fondo según sea necesario */
+}
+
+.button-black-outline {
+    color: #333;
+    background-color: transparent;
+    border: 2px solid #333; /* Cambia el color del borde según sea necesario */
+}
+
+.button:hover {
+    opacity: 0.8; /* Ajusta la opacidad al pasar el ratón por encima */
+}
 
 
 
