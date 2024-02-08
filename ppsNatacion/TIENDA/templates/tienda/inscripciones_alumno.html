@@ -2,59 +2,42 @@
 {% load static %}
 
 {% block body %}
-<div class="row">
-    <div class="col-md-12">
-      <h2 class="titulo">Inscripciones</h2>
-      <ul class="list-group">
-        {% for inscripcion in inscripciones %}
-          <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Inscripción: {{ inscripcion.fecha_inscripcion }}</li>
-        {% endfor %}
-      </ul>
-      <form method="post" action="{% url 'tienda:Inscripcion_alumno' usuario.id %}" id="inscripcion-form">
-        {% csrf_token %}
-        {{ inscripcion_form.as_p }}
-        <hr>
-        <button type="submit" class="btn btn-success btn-enviar">Inscribir</button>
-      </form>
-      <!-- En tu template HTML -->
-      <div id="alerta-mensaje" class="alert alert-danger" style="display: none;" role="alert"></div>
+<div style="display: flex;">
+    <div style="flex: 1;">
+        <h1 class="titulo">Calendario de Clases</h1>
+        <label class="saludo-label">Hola {{ request.user.username }}, puedes elegir la hora y el dia para el alumno {{ usuario.username }} </label><br>
+        <form method="post" id="claseForm" action="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" >
+            {% csrf_token %}
+            <input type="hidden" name="clase_id" value="{{ clase.id }}">
+            <input type="hidden" id="horariosSeleccionados" name="horariosSeleccionados" value="">
+            <div id="informacionEvento"></div>
+        </form>
     </div>
+    
+    <div class="titulo" id="calendario" style="flex: 1;"></div>
 </div>
-<a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i></a>
+<button class="btn btn-primary btn-enviar" type="button" id="enviarHorariosBtn">Asociar a Clase</button>
+<a href="{% url 'tienda:home' %}" class="btn-volver btn btn-primary">Volver al inicio</a>
+    <script>
 
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('inscripcion-form');
-      const alertaMensaje = document.getElementById('alerta-mensaje');
-
-      form.addEventListener('submit', async function(event) {
-        event.preventDefault();
-
-        const formData = new FormData(form);
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-          },
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          // Inscripción exitosa
-          alertaMensaje.innerText = result.message;
-          alertaMensaje.className = 'alert alert-success';
-        } else {
-          // Error en la inscripción
-          alertaMensaje.innerText = result.message;
-          alertaMensaje.className = 'alert alert-danger';
+        var usuarioId = '{{ usuario.id }}';
+        const getHorariosClaseURL = '{{ getHorariosClaseURL }}';
+    
+    
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
-
-        alertaMensaje.style.display = 'block';
-      });
-    });
-  </script>
-
+    </script>
+    <script src="{% static 'js/calendario2.js' %}"></script>
 {% endblock body %}
