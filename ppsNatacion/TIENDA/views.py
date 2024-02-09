@@ -448,7 +448,7 @@ def realizar_pago(request):
 def ver_mas_usuario(request, usuario_id):
     usuario = get_object_or_404(CustomUser, pk=usuario_id)
     compras = ComprasClase.objects.filter(usuario=usuario)
-    inscripciones = InscripcionClase.objects.filter(usuario=usuario)
+    inscripciones = InscripcionClase.objects.filter(usuario=usuario, clase_natacion__fecha__gte=timezone.now())
     return render(request, 'tienda/ver_mas_usuario.html', {'usuario': usuario, 'compras': compras, 'inscripciones': inscripciones})
 
 
@@ -536,8 +536,10 @@ def Inscripcion_alumno(request, usuario_id):
     
     clases = ClaseNatacion.objects.filter(nombre__in=clases_compradas)
     print(f"clases: {clases}")
+    
+    clases_compradas = ComprasClase.objects.filter(usuario=usuario)
 
-    return render(request, 'tienda/inscripciones_alumno.html', {'usuario': usuario, 'getHorariosClaseURL': reverse('tienda:get_horarios', kwargs={'usuario_id': usuario_id})})
+    return render(request, 'tienda/inscripciones_alumno.html', {'usuario': usuario,'clases_compradas':clases_compradas, 'getHorariosClaseURL': reverse('tienda:get_horarios', kwargs={'usuario_id': usuario_id})})
 
 
 def get_horarios(request, usuario_id):

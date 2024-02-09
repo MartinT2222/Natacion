@@ -5,7 +5,21 @@
 <div style="display: flex;">
     <div style="flex: 1;">
         <h1 class="titulo">Calendario de Clases</h1>
-        <label class="saludo-label">Hola {{ request.user.username }}, puedes elegir la hora y el dia para el alumno {{ usuario.username }} </label><br>
+        <h5 class="card-title titulo">Hola {{ request.user.username }}, puedes elegir la hora y el dia para el alumno {{ usuario.username }}</h5>
+        <div class="card">
+            <div class="card-header">
+                
+                <h5 class="card-title">Clases Compradas</h5>
+            </div>
+            <div class="card-body">
+                {% for compra in clases_compradas %}
+                <div class="mb-3">
+                    <h6 class="card-subtitle mb-2 text-muted">CLASE: {{ compra.clase_comprada }}</h6>
+                    <p class="card-text">HORAS DISPONIBLES: {{ compra.cupos_disponibles_pagos }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         <form method="post" id="claseForm" action="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" >
             {% csrf_token %}
             <input type="hidden" name="clase_id" value="{{ clase.id }}">
@@ -17,7 +31,7 @@
     <div class="titulo" id="calendario" style="flex: 1;"></div>
 </div>
 <button class="btn btn-primary btn-enviar" type="button" id="enviarHorariosBtn">Asociar a Clase</button>
-<a href="{% url 'tienda:home' %}" class="btn-volver btn btn-primary">Volver al inicio</a>
+<a href="{% url 'tienda:lista_alumnos' %}" class="btn-volver btn btn-primary">Volver al inicio</a>
     <script>
 
         var usuarioId = '{{ usuario.id }}';
