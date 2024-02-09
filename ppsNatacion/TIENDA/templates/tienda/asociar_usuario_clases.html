@@ -5,7 +5,21 @@
 <div style="display: flex;">
     <div style="flex: 1;">
         <h1 class="titulo">Calendario de Clases</h1>
-        <label class="saludo-label">Hola {{ request.user.username }}, puedes elegir las clases que quieres tomar</label><br>
+        <h5 class="card-title titulo">Hola {{ usuario.username }}, puedes elegir las clases que quieres tomar</h5>
+        <div class="card">
+            <div class="card-header">
+                
+                <h5 class="card-title">Clases Compradas</h5>
+            </div>
+            <div class="card-body">
+                {% for compra in clases_compradas %}
+                <div class="mb-3">
+                    <h6 class="card-subtitle mb-2 text-muted">CLASE: {{ compra.clase_comprada }}</h6>
+                    <p class="card-text">HORAS DISPONIBLES: {{ compra.cupos_disponibles_pagos }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         <form method="post" id="claseForm" action="{% url 'tienda:asociar_usuario_clases' %}">
             {% csrf_token %}
             <input type="hidden" name="clase_id" value="{{ clase.id }}">

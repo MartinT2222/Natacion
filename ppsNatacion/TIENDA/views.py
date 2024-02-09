@@ -179,12 +179,14 @@ def asociar_usuario_clases(request):
     clases_compradas = ComprasClase.objects.filter(usuario=request.user).values_list('clase_comprada', flat=True)
 
     clases = ClaseNatacion.objects.filter(nombre__in=clases_compradas)
-
-
+    usuario = request.user  # Acceder al usuario autenticado
+    clases_compradas = ComprasClase.objects.filter(usuario=request.user)
+    print(f"clases_compradas: {clases_compradas}")
     #print(f"asociar_usuario_clases: {clases}")
     #print(f"Me trae todos los ClaseNatacion object (1)> al entrar en la vista Asiciar usuarios a clases: ")
     
-    return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases})  # Reemplaza 'ruta_de_tu_template.html' con el nombre correcto de tu template
+    return render(request, 'tienda/asociar_usuario_clases.html', {'clases': clases,'usuario': usuario,'clases_compradas':clases_compradas })  # Reemplaza 'ruta_de_tu_template.html' con el nombre correcto de tu template
+
 
  
 
@@ -225,7 +227,6 @@ def get_horarios_clase(request):
     } for evento in eventos]
 
     return JsonResponse(eventos_json, safe=False)
-
 
 
 
