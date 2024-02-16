@@ -2,102 +2,99 @@
 {% load static %}
 
 {% block carrusel %}
-        <!--comienza carrusel-->
-        <div id="carouselExampleIndicators" class="carousel slide">
-          <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-          </div>
-          <div class="carousel-inner">
-            <div class="carousel-item active d-item active">
-              <img src="{% static 'media/img/R.jpeg' %}" class="d-block w-100 d-img" alt="...">
-            </div>
-            <div class="carousel-item d-item">
-              <img src="{% static 'media/img/agua2.jpg' %}" class="d-block w-100 d-img" alt="...">
-            </div>
-            <div class="carousel-item d-item">
-              <img src="{% static 'media/img/R.jpeg' %}" class="d-block w-100 d-img" alt="...">
-            </div>
-          </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
-        </div>
-      <!--fin carrusel-->
-
+<!--comienza carrusel-->
+<div id="carouselExampleIndicators" class="carousel slide">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+      aria-current="true" aria-label="Slide 1"></button>
+    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+  </div>
+  <div class="carousel-inner">
+    <div class="carousel-item active d-item active">
+      <img src="{% static 'media/img/R.jpeg' %}" class="d-block w-100 d-img" alt="...">
+    </div>
+    <div class="carousel-item d-item">
+      <img src="{% static 'media/img/agua2.jpg' %}" class="d-block w-100 d-img" alt="...">
+    </div>
+    <div class="carousel-item d-item">
+      <img src="{% static 'media/img/R.jpeg' %}" class="d-block w-100 d-img" alt="...">
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+    data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+    data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+<!--fin carrusel-->
 
 {% endblock carrusel %}
 
 {% block presentacion %}
 
-<div > 
+<div>
   <h1 id="presentacion">Estamos para garantizarte un buen servicio, con los mejores profecionales a tu disposicion</h1>
-
 </div>
-
 
 {% endblock presentacion %}
 
-
-
-
-
-
-
-
-
 {% block body %}
 
-
-<h2 style="width: 100%; height: 100%;">Lista de clases</h2>
+<h2 style="width: 100%; height: 100%;">Tipos de Clases</h2>
 <div class="d-flex flex-wrap">
-    {% for clase in clases %}
-        <div class="card mb-3 mx-3" style="width: 18rem; margin: 30px">
-            {% if clase.imagen %}
-                <img src="{{ clase.imagen.url }}" class="card-img-top" alt="{{ clase.nombre }}">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ clase.nombre }}</h5>
-                <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
-                <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
-                <p style="color: #1F618D;">Precio por 1 clase: {{ clase.precio }}</p>
-                <p style="color: #1F618D;">Precio por 2 clases: {{ clase.precio_por_2_clases }}</p>
-                <p style="color: #1F618D;">Precio por 3 clases: {{ clase.precio_por_3_clases }}</p>
-                <p style="color: #1F618D;">Precio por 4 clases: {{ clase.precio_por_4_clases }}</p>
-                <p style="color: #1F618D;">Precio por 5 clases: {{ clase.precio_por_5_clases }}</p>
-                <p style="color: #1F618D;">Precio por 6 clases: {{ clase.precio_por_6_clases }}</p>
+  {% for clase in clases %}
+  <div class="card mb-3 mx-3" style="width: 18rem; margin: 30px">
+    {% if clase.imagen %}
+    <img src="{{ clase.imagen.url }}" class="card-img-top" alt="{{ clase.nombre }}">
+    {% endif %}
+    <div class="card-body">
+      <h5 class="card-title">{{ clase.nombre }}</h5>
+      <p class="card-text">Días: {{ clase.dias|join:", " }}</p>
+      <p class="card-text">Hora: {{ clase.hora_inicio }} - {{ clase.hora_fin }}</p>
+      <p style="color: #1F618D;">Precio por 1 Sesión: {{ clase.precio }}</p>
+      <p style="color: #1F618D;">Precio por 2 Sesiones: {{ clase.precio_por_2_clases }}</p>
+      <p style="color: #1F618D;">Precio por 3 Sesiones: {{ clase.precio_por_3_clases }}</p>
+      <p style="color: #1F618D;">Precio por 4 Sesiones: {{ clase.precio_por_4_clases }}</p>
+      <p style="color: #1F618D;">Precio por 5 Sesiones: {{ clase.precio_por_5_clases }}</p>
+      <p style="color: #1F618D;">Precio por 6 Sesiones: {{ clase.precio_por_6_clases }}</p>
 
-                <!-- Selector de clases y Botón de pago -->
-                <label for="claseSelector_{{ clase.nombre }}">Selecciona el número de clases:</label>
-                <select class="claseSelector" id="claseSelector_{{ clase.nombre }}" data-clase-id="{{ clase.nombre }}">
-                  <option value="1" data-precio="{{ clase.precio }}">1 clase</option>
-                  <option value="2" data-precio="{{ clase.precio_por_2_clases }}">2 clases</option>
-                  <option value="3" data-precio="{{ clase.precio_por_3_clases }}">3 clases</option>
-                  <option value="4" data-precio="{{ clase.precio_por_4_clases }}">4 clases</option>
-                  <option value="5" data-precio="{{ clase.precio_por_5_clases }}">5 clases</option>
-                  <option value="6" data-precio="{{ clase.precio_por_6_clases }}">6 clases</option>
-                </select>
-                <button
-                    class="btn btn-primary btnPagar"
-                    data-clase-id="{{ clase.nombre }}"
-                    data-cupos="{{ clase.cupos }}"
-                    data-dias="{{ clase.dias|join:", " }}"
-                    data-hora-inicio="{{ clase.hora_inicio }}"
-                    data-hora-fin="{{ clase.hora_fin }}"
-                    onclick="redirectToPagoProducto()">
-                    Descripción del pago
-                </button>
-                <!-- Resto de la información -->
-                <!-- Agrega un botón o enlace para redirigir a más detalles si es necesario -->
-            </div>
-        </div>
-    {% endfor %}
+      <!-- Selector de clases y Botón de pago -->
+      <label for="claseSelector_{{ clase.nombre }}">Selecciona el número de Sesiones:</label>
+      <select class="claseSelector" id="claseSelector_{{ clase.nombre }}" data-clase-id="{{ clase.nombre }}">
+        <option value="1" data-precio="{{ clase.precio }}">1 Sesión</option>
+        <option value="2" data-precio="{{ clase.precio_por_2_clases }}">2 Sesiones</option>
+        <option value="3" data-precio="{{ clase.precio_por_3_clases }}">3 Sesiones</option>
+        <option value="4" data-precio="{{ clase.precio_por_4_clases }}">4 Sesiones</option>
+        <option value="5" data-precio="{{ clase.precio_por_5_clases }}">5 Sesiones</option>
+        <option value="6" data-precio="{{ clase.precio_por_6_clases }}">6 Sesiones</option>
+      </select>
+      <button
+        class="btn btn-primary btnPagar"
+        data-clase-id="{{ clase.nombre }}"
+        data-cupos="{{ clase.cupos }}"
+        data-dias="{{ clase.dias|join:", " }}"
+        data-hora-inicio="{{ clase.hora_inicio }}"
+        data-hora-fin="{{ clase.hora_fin }}"
+        onclick="redirectToPagoProducto()">
+        Descripción del pago
+      </button>
+
+      <!-- Botón para modificar clase -->
+      {% if user.is_superuser %}
+      <a href="{% url 'tienda:modificar_clase' clase.id %}" class="btn btn-warning">Modificar</a>
+      {% endif %}
+
+      <!-- Resto de la información -->
+      <!-- Agrega un botón o enlace para redirigir a más detalles si es necesario -->
+    </div>
+  </div>
+  {% endfor %}
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -129,4 +126,3 @@
   }
 </script>
 {% endblock body %}
-

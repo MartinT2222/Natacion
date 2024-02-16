@@ -4,7 +4,16 @@
 {% block body %}
 <div class="container mt-5">
     <h1>Lista de Turnos</h1>
-
+    {% if messages %}
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <ul class="list-unstyled mb-0">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
     
 
     <table id="turnos-table" class="table table-bordered table-striped">
@@ -27,7 +36,7 @@
                     <td>{{ turno.obtener_hora_inicio }}</td>
                     <td>{{ turno.obtener_hora_fin }}</td>
                     <td>
-                        <button class="btn btn-danger cancelar-turno" data-turno-id="{{ turno.id }}">Cancelar</button>
+                        <button class="btn btn-danger cancelar-turno" data-turno-id="{{ turno.id }}" data-enviar-json="true">Cancelar</button>
                     </td>
                 </tr>
             {% endfor %}
@@ -49,28 +58,33 @@
         botonesCancelar.forEach(boton => {
             boton.addEventListener('click', function() {
                 const turnoId = this.getAttribute('data-turno-id');
-                console.log('turnoId:', turnoId);
+                const enviarJSON = this.getAttribute('data-enviar-json');
+
                 if (confirm('¿Estás seguro de cancelar este turno?')) {
-                    // Envía una solicitud al servidor para cancelar el turno
-                    fetch(`/cancelar_turno/${turnoId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}' // Asegúrate de tener el token CSRF disponible
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Turno cancelado exitosamente');
-                            window.location.reload();
-                        } else {
-                            response.json().then(data => {
-                                alert(`Error al cancelar el turno: ${data.error}`);
-                            }).catch(error => {
-                                console.error('Error al analizar la respuesta JSON:', error);
-                            });
-                        }
-                    })
+                    if (enviarJSON === 'true') {
+                        fetch(`/cancelar_turno/${turnoId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                alert('Turno cancelado exitosamente');
+                                window.location.reload();
+                            } else {
+                                response.json().then(data => {
+                                    alert(`Error al cancelar el turno: ${data.error}`);
+                                }).catch(error => {
+                                    console.error('Error al analizar la respuesta JSON:', error);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al realizar la solicitud:', error);
+                        });
+                    }
                 }
             });
         });

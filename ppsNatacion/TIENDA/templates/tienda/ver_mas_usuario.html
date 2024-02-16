@@ -18,10 +18,26 @@
     
     <div class="row">
       <div class="col-md-12">
+        {% if messages %}
+          <div class="alert alert-success alert-dismissible">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <ul class="list-unstyled mb-0">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
         <h2 class="titulo">Compras</h2>
         <ul class="list-group">
           {% for compra in compras %}
-            <li class="list-group-item">{{ compra.clase_comprada }} - Precio: {{ compra.precio_clase }} - Fecha: {{ compra.fecha_compra }}</li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ compra.clase_comprada }} - Precio: {{ compra.precio_clase }} - Fecha: {{ compra.fecha_compra }}
+              <form method="post" action="{% url 'tienda:eliminar_compra' compra_id=compra.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm ">Eliminar</button>
+              </form>
+            </li>
           {% endfor %}
         </ul>
         <a href="{% url 'tienda:agregar_compra' usuario_id=usuario.id %}" class="btn btn-success btn-enviar">Agregar Compra</a>
@@ -33,7 +49,13 @@
         <h2 class="titulo">Turnos</h2>
         <ul class="list-group">
           {% for inscripcion in inscripciones %}
-            <li class="list-group-item">{{ inscripcion.clase_natacion.nombre }} - Fecha Turnos: {{ inscripcion.clase_natacion.fecha }}</li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ inscripcion.clase_natacion.nombre }} - Fecha Turnos: {{ inscripcion.clase_natacion.fecha }}
+              <form method="post" action="{% url 'tienda:cancelar_turno' turno_id=inscripcion.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm ">Eliminar</button>
+              </form>
+            </li>
           {% endfor %}
         </ul>
         <a href="{% url 'tienda:Inscripcion_alumno' usuario_id=usuario.id %}" class="btn btn-success btn-enviar">Inscribir Alumno</a>

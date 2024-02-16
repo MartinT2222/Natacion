@@ -2,7 +2,7 @@ import json
 from django.contrib.auth.decorators import permission_required, login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.query_utils import Q
-from django.http import JsonResponse, HttpResponseServerError
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseServerError
 from django.urls import reverse
 from USUARIOS.models import CustomUser
 from USUARIOS.forms import RegistroForm
@@ -23,7 +23,6 @@ from decimal import Decimal, InvalidOperation
 
 
 
-
 def home(request):
     translation.activate('es')
     clases = ClaseNatacion.objects.all()
@@ -39,6 +38,7 @@ def home(request):
         
         if nombre not in clases_unicas:
             clases_unicas[nombre] = {
+                'id': clase.id,  # Agrega el ID de la clase
                 'nombre': nombre,
                 'dias': dias,
                 'hora_inicio': hora_inicio,
@@ -113,45 +113,6 @@ def generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin):
             horarios.append(fecha)
             fecha += timedelta(days=7)
     return horarios
-
-
-@login_required
-@permission_required('TIENDA.agregar_clase')
-def agregar_clase_natacion(request):
-    if request.method == 'POST':
-        clase_form = ClaseNatacionForm(request.POST, request.FILES)
-        if clase_form.is_valid():
-            hora_inicio = clase_form.cleaned_data['hora_inicio']
-            hora_fin = clase_form.cleaned_data['hora_fin']
-            dias_semana = request.POST.getlist('dias_semana')
-
-            nueva_clase = clase_form.save(commit=False)
-
-            horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
-
-            for fecha in horarios_recurrentes:
-                try:
-                    nueva_instancia = ClaseNatacion.objects.create(
-                        nombre=nueva_clase.nombre,
-                        fecha=fecha,
-                        hora_inicio=hora_inicio,
-                        hora_fin=hora_fin,
-                        cupos_disponibles=nueva_clase.cupos_disponibles,
-                        precio=nueva_clase.precio,
-                        imagen=nueva_clase.imagen  # Asigna la imagen a cada instancia
-                    )
-                    nueva_instancia.save()
-                except IntegrityError as e:
-                    print(f"Error de integridad al guardar para la fecha {fecha}: {e}")
-                    # Manejo específico para la excepción de integridad, puedes agregar aquí lo que consideres necesario
-
-            messages.success(request, 'Las clases se han guardado exitosamente!')
-            return redirect('tienda:agregar_clase')
-
-    else:
-        clase_form = ClaseNatacionForm()
-
-    return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form})
 
 
 
@@ -295,7 +256,7 @@ def ver_turnos(request):
 
 @require_POST
 @login_required
-def cancelar_turno(request, turno_id):
+def cancelar_turno(request, turno_id, enviar_json=False):
     try:
         with transaction.atomic():
             turno = get_object_or_404(InscripcionClase, pk=turno_id)
@@ -305,26 +266,32 @@ def cancelar_turno(request, turno_id):
             clase_natacion.cupos_disponibles += 1
             clase_natacion.save()
 
-            # Buscar el registro existente en ComprasClase y actualizar cupos_disponibles_pagos
             compra_clase = ComprasClase.objects.filter(
                 usuario=turno.usuario,
-                clase_comprada=turno.clase_natacion.nombre,  # Ajusta según la estructura de tu modelo
+                clase_comprada=turno.clase_natacion.nombre,
             ).first()
 
             if compra_clase:
                 compra_clase.cupos_disponibles_pagos += 1
                 compra_clase.save()
-                
-            #print(f"Clase de Natación: {clase_natacion}")
 
-            #print(f"compra_clase: {compra_clase} - ")
             turno.delete()
             print("Turno cancelado exitosamente")
 
-            return JsonResponse({'message': 'Turno cancelado exitosamente'})
+            if enviar_json:
+                return JsonResponse({'message': 'Turno cancelado exitosamente'})
+            else:
+                usuario_id = turno.usuario.id
+                messages.success(request, 'Turno cancelado exitosamente.')
+                return HttpResponseRedirect(reverse('tienda:ver_mas_usuario', args=[usuario_id]))
     except Exception as e:
         print(f"Error al cancelar el turno: {e}")
-        return JsonResponse({'error': 'Error al cancelar el turno'}, status=500)
+        if enviar_json:
+            return JsonResponse({'error': 'Error al cancelar el turno'}, status=500)
+        else:
+            messages.error(request, 'Error al cancelar el turno.')
+            return HttpResponseRedirect(reverse('tienda:ver_mas_usuario', args=[usuario_id]))
+
     
     
     
@@ -380,7 +347,7 @@ def pago_producto(request):
 
 
 
-from django.http import JsonResponse
+
 
 def realizar_pago(request):
     messages = []
@@ -467,6 +434,26 @@ def AgregarAlumno(request):
         form = RegistroForm()
     return render(request, template_name, {'form': form})
 
+
+def obtener_precio_clase(request):
+    if request.method == 'GET':
+        clase_comprada = request.GET.get('clase_comprada')
+        if clase_comprada:
+            # Obtener el precio de la clase seleccionada
+            precio = ClaseNatacion.objects.filter(nombre=clase_comprada).values_list('precio', flat=True).first()
+            if precio is not None:
+                return JsonResponse({'precio': precio})
+    return JsonResponse({'error': 'No se pudo obtener el precio de la clase'}, status=400)
+
+
+@require_POST
+def eliminar_compra(request, compra_id):
+    compras = get_object_or_404(ComprasClase, id=compra_id)
+    usuario_id = compras.usuario.id
+    compras.delete()
+    messages.success(request, 'La compra ha sido eliminada exitosamente.')
+    return redirect(reverse('tienda:ver_mas_usuario', kwargs={'usuario_id': usuario_id}))
+
 def agregar_compra(request, usuario_id):
     usuario = get_object_or_404(CustomUser, pk=usuario_id)
     compras = ComprasClase.objects.filter(usuario=usuario)
@@ -476,28 +463,38 @@ def agregar_compra(request, usuario_id):
         
         if form.is_valid():
             nombre_clase = form.cleaned_data['clase_comprada']
+            precio_clase = form.cleaned_data['precio_clase']
+            cupos_disponibles = form.cleaned_data['cupos_disponibles_pagos']
+            print(f"cupos_disponibles: {cupos_disponibles}")
+            print(f"precio_clase: {precio_clase}")
             
+            # Calcular el precio total
+            precio_total = precio_clase * cupos_disponibles # descuento
+            print(f"precio_total: {precio_total}")
             # Verificar si hay una compra existente con el mismo nombre
             compra_existente = ComprasClase.objects.filter(
                 usuario=usuario,
-                clase_comprada=nombre_clase  # Usar la variable nombre_clase aquí
+                clase_comprada=nombre_clase
             ).first()
 
             if compra_existente:
                 # Si existe, actualizar la compra existente
-                compra_existente.precio_clase = form.cleaned_data['precio_clase']
-                compra_existente.cupos_disponibles_pagos += form.cleaned_data['cupos_disponibles_pagos']
+                compra_existente.precio_clase = precio_total
+                compra_existente.cupos_disponibles_pagos += cupos_disponibles
                 compra_existente.fecha_compra = timezone.now()
-                compra_existente.save()
+                compra_existente.save()  # Guardar la compra actualizada
             else:
                 # Si no existe, crear una nueva compra
-                compra = form.save(commit=False)
-                compra.usuario = usuario
-                compra.save()
+                ComprasClase.objects.create(
+                    usuario=usuario,
+                    clase_comprada=nombre_clase,
+                    precio_clase=precio_total,
+                    cupos_disponibles_pagos=cupos_disponibles
+                )
 
             return redirect('tienda:ver_mas_usuario', usuario_id=usuario_id)
     else:
-        form = CompraForm(request.POST or None)
+        form = CompraForm()
 
     return render(request, 'tienda/agregar_compra.html', {'form': form, 'usuario': usuario, 'compras': compras})
 
@@ -641,6 +638,90 @@ def capturar_id_Admin(request, usuario_id):
     except Exception as e:
         return JsonResponse({'error': f'Error interno del servidor: {str(e)}'}, status=500)
 
+
+from django.db import IntegrityError
+
+def modificar_clase(request, clase_id):
+    clase = get_object_or_404(ClaseNatacion, pk=clase_id)
     
+    if request.method == 'POST':
+        form = ClaseNatacionForm(request.POST, request.FILES, instance=clase)
+        if form.is_valid():
+            ClaseNatacion.objects.filter(nombre=clase.nombre).delete()
+            hora_inicio = form.cleaned_data['hora_inicio']
+            hora_fin = form.cleaned_data['hora_fin']
+            dias_semana = request.POST.getlist('dias_semana')
+
+            nueva_clase = form.save(commit=False)
+
+            horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
+            ClaseNatacion.objects.filter(nombre=clase.nombre).delete()
+            for fecha in horarios_recurrentes:
+                try:
+                    
+                    nueva_instancia = ClaseNatacion.objects.create(
+                        nombre=nueva_clase.nombre,
+                        fecha=fecha,
+                        hora_inicio=hora_inicio,
+                        hora_fin=hora_fin,
+                        cupos_disponibles=nueva_clase.cupos_disponibles,
+                        precio=nueva_clase.precio,
+                        imagen=nueva_clase.imagen  # Asigna la imagen a cada instancia
+                    )
+                    nueva_instancia.save()
+                except IntegrityError as e:
+                    print(f"Error de integridad al guardar para la fecha {fecha}: {e}")
+                    # Manejo específico para la excepción de integridad, puedes agregar aquí lo que consideres necesario
+
+            messages.success(request, 'Las clases se han guardado exitosamente!')
+            return redirect('tienda:home')
+    else:
+        form = ClaseNatacionForm(instance=clase)
     
-    
+    return render(request, 'tienda/modificar_clase.html', {'form': form})
+
+
+
+
+
+
+
+@login_required
+@permission_required('TIENDA.agregar_clase')
+def agregar_clase_natacion(request):
+    if request.method == 'POST':
+        clase_form = ClaseNatacionForm(request.POST, request.FILES)
+        if clase_form.is_valid():
+            
+            hora_inicio = clase_form.cleaned_data['hora_inicio']
+            hora_fin = clase_form.cleaned_data['hora_fin']
+            dias_semana = request.POST.getlist('dias_semana')
+
+            nueva_clase = clase_form.save(commit=False)
+
+            horarios_recurrentes = generar_horarios_recurrentes(dias_semana, hora_inicio, hora_fin)
+
+            for fecha in horarios_recurrentes:
+                try:
+                    nueva_instancia = ClaseNatacion.objects.create(
+                        nombre=nueva_clase.nombre,
+                        fecha=fecha,
+                        hora_inicio=hora_inicio,
+                        hora_fin=hora_fin,
+                        cupos_disponibles=nueva_clase.cupos_disponibles,
+                        precio=nueva_clase.precio,
+                        imagen=nueva_clase.imagen  # Asigna la imagen a cada instancia
+                    )
+                    nueva_instancia.save()
+                except IntegrityError as e:
+                    print(f"Error de integridad al guardar para la fecha {fecha}: {e}")
+                    # Manejo específico para la excepción de integridad, puedes agregar aquí lo que consideres necesario
+
+            messages.success(request, 'Las clases se han guardado exitosamente!')
+            return redirect('tienda:agregar_clase')
+
+    else:
+        clase_form = ClaseNatacionForm()
+
+    return render(request, 'tienda/agregar_clase.html', {'clase_form': clase_form})
+

@@ -4,7 +4,7 @@
 {% block body %}
   <div class="container">
     <h2 class="titulo">Agregar Nueva Compra</h2>
-    <form method="post" action="{% url 'tienda:agregar_compra' usuario.id %}">
+    <form id="compra-form" method="post" action="{% url 'tienda:agregar_compra' usuario.id %}">
       {% csrf_token %}
       <div class="form-group">
         {{ form.clase_comprada.label_tag }}
@@ -21,10 +21,47 @@
         {{ form.cupos_disponibles_pagos }}
       </div>
       <hr>
+      <div class="form-group">
+        <label for="id_precio_total">Precio Total:</label>
+        <input type="text" id="id_precio_total" readonly>
+      </div>
+      <hr>
         
       <button type="submit" class="btn btn-success btn-enviar">Guardar Compra</button>
-
     </form>
     <a href="{% url 'tienda:ver_mas_usuario' usuario.id %}" class="btn btn-primary btn-volver titulo"><i class="fa fa-reply-all" aria-hidden="true"> Volver</i> </a>
   </div>
+  <script>
+    $(document).ready(function() {
+      $('#id_clase_comprada').change(function() {
+          var claseSeleccionada = $(this).val();
+          if (claseSeleccionada) {
+              $.ajax({
+                  url: '/obtener_precio_clase/',  // URL de la vista para obtener el precio de la clase
+                  data: {
+                      'clase_comprada': claseSeleccionada
+                  },
+                  dataType: 'json',
+                  success: function(data) {
+                      $('#id_precio_clase').val(data.precio);
+                  }
+              });
+          } else {
+              $('#id_precio_clase').val('');
+          }
+      });
+      $('#id_cupos_disponibles_pagos').on('input', function() {
+          var precioBase = parseFloat($('#id_precio_clase').val());
+          var cupos = parseInt($(this).val()); 
+          
+          // Verificar si los valores son números válidos
+          if (!isNaN(precioBase) && !isNaN(cupos)) {
+              var precioTotal = precioBase * cupos;
+              
+              // Actualizar el campo de precio total
+              $('#id_precio_total').val(precioTotal.toFixed(2));
+          }
+      });
+    });
+  </script>
 {% endblock body %}
